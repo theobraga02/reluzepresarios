@@ -1,0 +1,17 @@
+:root {
+  --abismo: #050B10;
+  --petroleo: #0B1A22;
+  --profundo: #0E4B5A;
+  --aurora: #19B8A5;
+  --menta: #7FE3C6;
+  --ambar: #F5B544;
+  --coral: #FF6B4A;
+  --texto: #E8F1F2;
+  --texto-suave: #8FA6AB;
+  --vidro-fundo: rgba(255, 255, 255, 0.04);
+  --vidro-borda: rgba(255, 255, 255, 0.10);
+  --linha: rgba(255, 255, 255, 0.06);
+
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'Instrument Sans', system-ui, sans-serif;
+}
