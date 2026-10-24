@@ -15,34 +15,20 @@
 6. **Bíblia:** Textos bíblicos em tradução de domínio público (João Ferreira de Almeida Revista e Corrigida/Atualizada histórica), sempre exibindo a referência exata e tradução.
 7. **Privacidade e LGPD:** Todos os dados do usuário ficam no dispositivo (armazenamento local / offline-first), com opções fáceis de exportar (JSON) e apagar tudo definitivamente.
 
-## 3. Identidade Visual (Design Tokens - Dark Amber)
-- **Fundo Base:** `#0A100D`
-- **Superfície (Cards):** `#121C17`, borda `#22312A`
-- **Superfície Elevada:** `#1A2822`
-- **Texto Principal:** `#F3ECDD` (creme aconchegante)
-- **Texto Secundário:** `#A9B7AD` (contraste acessível WCAG AA)
-- **Acento Principal (Sol Âmbar):** `#F0AE45` (botões principais, anéis de progresso, estados ativos)
-- **Texto sobre Âmbar:** `#0A100D`
-- **Gradiente Destaque Floresta:** `#1C4635` até `#0E211A`
-- **Cores Semânticas por Área:**
-  - Corpo: `#4CC2B0`
-  - Fé: `#F0AE45`
-  - Foco: `#7BA4FF`
-  - Finanças: `#F58A72`
-  - Vendas: `#B79BFF`
-  - Aprender: `#A5D65A`
-  - Sono: `#93A5C2`
-  - Networking: `#F592B4`
-- **Tipografia:**
-  - Títulos/Números de destaque: `Fraunces`, serifada expressiva (600)
-  - Textos de interface, botões e formulários: `DM Sans` (400, 500, 700)
-- **Formas & Acessibilidade:**
-  - Cards arredondados (22-28px), botões em pílula (pill)
-  - Alvo de toque mínimo: 44px
-  - Animações respeitam `prefers-reduced-motion`
+## 3. Identidade Visual (Preto / Grafite / Branco)
+- **Marca:** EMPRESÁRIO (logo "E" + wordmark com espaçamento largo). Lema: "Disciplina. Foco. Resultados."
+- **Fundo base:** `#09090a`; tela do app `#0d0d0e`; cards `#161617` com borda `#262628`
+- **Texto:** principal `#f4f4f5`; secundário `#9a9aa0`; terciário `#6b6b70`
+- **Acentos funcionais (só em estados):** ok `#7ddc9a`, atenção `#f3a24b`
+- **Botão principal:** pílula branca (`#f4f4f5`) com texto escuro; secundário: contorno/fantasma
+- **Faixa de vitrine da landing:** fundo claro `#f1f0ee` com telas escuras
+- **Tipografia:** Inter (300 nos títulos grandes, 400/500/600 na interface); assinatura em Caveat
+- **Ícones:** lucide-react, traço fino (1.3–1.8)
+- **Formas & acessibilidade:** cards 12–14px, botões em pílula, alvo de toque mínimo 44px nas ações principais; animações respeitam `prefers-reduced-motion`
+- **Imagens:** apenas ilustrações vetoriais próprias (SVG); nada de fotos/capas de terceiros
 
 ## 4. Fases de Desenvolvimento
-- **Fase 1:** Sistema de design, tokens, navegação inferior, tela "Hoje" com anel 600ms, versículo conferido e checklist de hábitos com filtros.
+- **Fase 1 (feita):** landing + telas Hoje, Painel, Registrar, Aprender e IA Coach, navegação inferior, persistência local.
 - **Fase 2:** "Registrar" (cronômetro de foco, caixa R$, treino, vendas, etc.) e persistência local com exportação/reset LGPD.
 - **Fase 3:** "Painel" de métricas (heatmap 12 semanas, revisão da semana, média, linha de receita/caixa).
 - **Fase 4:** "Aprender" com trilhas de habilidades e curadoria de vídeos conferidos com disclaimers.

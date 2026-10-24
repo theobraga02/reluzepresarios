@@ -1,0 +1,12 @@
+{
+  "name": "Empresário",
+  "short_name": "Empresário",
+  "description": "Hábitos, foco, saúde, finanças, vendas e aprendizado em um só app.",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#09090a",
+  "theme_color": "#09090a",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

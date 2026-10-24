@@ -1,32 +1,26 @@
-# React + TypeScript + Vite
+# Empresário
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+App web de hábitos, foco, treino, finanças, vendas, Bíblia, sono e aprendizado para empresários.
+**Disciplina. Foco. Resultados.**
 
-Currently, two official plugins are available:
+- **Landing:** `/`
+- **App:** `/app` (Hoje · Painel · Registrar · Aprender · IA Coach · Dados e privacidade)
+- Stack: Vite + React 19 + TypeScript + Tailwind v4 (reset) + Recharts + lucide-react
+- Dados: ficam no `localStorage` do aparelho (exportar/apagar em *Dados e privacidade*). Sem servidor por enquanto.
+- IA Coach: avaliação por regras locais (`src/lib/coach.ts`). Supabase / Edge Function `coach-diario` entram numa próxima etapa.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Rodar
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev      # desenvolvimento
+npm run build    # tsc -b && vite build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Deploy
+Vercel (Vite). O `vercel.json` já faz o fallback das rotas para o `index.html`.
+
+## Notas de conteúdo
+- Livros em *Aprender* são obras reais; cursos e vídeos são sugestões de **exemplo**, sem link.
+- Telas da landing usam dados de exemplo (marcado na página).
+- Conteúdo financeiro é educativo; não é recomendação de investimento.
