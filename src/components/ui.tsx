@@ -2,9 +2,9 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import {
   BookOpen, ChartNoAxesCombined, Crosshair, Dumbbell, GraduationCap, Handshake, House,
-  Moon, RefreshCw, SquarePen, Wallet,
+  Library, Moon, RefreshCw, SquarePen, Wallet,
 } from 'lucide-react'
-import type { Area } from '../lib/model'
+import type { Area } from '../lib/types'
 
 export function LogoMark({ size = 28 }: { size?: number }) {
   return (
@@ -33,6 +33,7 @@ export const AREA_ICON: Record<Area, typeof Moon> = {
   biblia: BookOpen,
   sono: Moon,
   foco: Crosshair,
+  leitura: Library,
 }
 
 export function ScoreRing({

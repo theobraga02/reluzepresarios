@@ -6,7 +6,11 @@ import Painel from './pages/Painel'
 import Registrar from './pages/Registrar'
 import Aprender from './pages/Aprender'
 import Coach from './pages/Coach'
-import Perfil from './pages/Perfil'
+import Agenda from './pages/Agenda'
+import Rede from './pages/Rede'
+import Negocio from './pages/Negocio'
+import Biblia from './pages/Biblia'
+import Mais from './pages/Mais'
 
 function ScrollTop() {
   const { pathname } = useLocation()
@@ -38,7 +42,12 @@ export default function App() {
           <Route path="registrar" element={<Registrar />} />
           <Route path="aprender" element={<Aprender />} />
           <Route path="coach" element={<Coach />} />
-          <Route path="perfil" element={<Perfil />} />
+          <Route path="agenda" element={<Agenda />} />
+          <Route path="rede" element={<Rede />} />
+          <Route path="negocio" element={<Negocio />} />
+          <Route path="biblia" element={<Biblia />} />
+          <Route path="mais" element={<Mais />} />
+          <Route path="perfil" element={<Navigate to="/app/mais" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

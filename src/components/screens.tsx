@@ -1,8 +1,10 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Area as RArea, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Bell, CircleAlert, CircleCheck, Trophy, User, X } from 'lucide-react'
 import type { Period, Ponto, Resumo } from '../lib/analytics'
-import { fmtBRL, type Area } from '../lib/model'
+import { moeda as fmtBRL } from '../lib/score'
+import type { Area } from '../lib/types'
 import { AREA_ICON, BottomNav, LogoMark, ScoreRing } from './ui'
 
 /* ───────────────────────── Hoje ───────────────────────── */
@@ -25,7 +27,7 @@ export function HojeView({ d }: { d: HojeData }) {
           <h2>Hoje</h2>
           <p className="scr-sub">{d.data}</p>
         </div>
-        <Link to="/app/perfil" className="icon-btn" aria-label="Perfil e dados">
+        <Link to="/app/mais" className="icon-btn" aria-label="Mais opções">
           <User size={16} strokeWidth={1.6} />
         </Link>
       </header>
@@ -82,7 +84,7 @@ const PERIODOS: { k: Period; label: string; resumo: string }[] = [
   { k: 'ano', label: 'Ano', resumo: 'Resumo do ano' },
 ]
 
-export function PainelView({ d, onPeriod }: { d: PainelData; onPeriod?: (p: Period) => void }) {
+export function PainelView({ d, onPeriod, extra }: { d: PainelData; onPeriod?: (p: Period) => void; extra?: ReactNode }) {
   const v = d.variacao
   const r = d.resumo
   const tem = d.serie.some((p) => p.valor != null)
@@ -148,6 +150,7 @@ export function PainelView({ d, onPeriod }: { d: PainelData; onPeriod?: (p: Peri
           <div className="card stat"><span className="chip-ic"><AreaIcon a="financas" /></span><small>Finanças</small><b>{fmtBRL(r.financas)}</b></div>
           <div className="card stat"><span className="chip-ic"><AreaIcon a="vendas" /></span><small>Vendas</small><b>{r.vendas.a}/{r.vendas.b}</b></div>
         </div>
+        {extra}
       </div>
       <BottomNav active="painel" />
     </div>

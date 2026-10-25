@@ -8,7 +8,7 @@ import { CoachView, HojeView, PainelView, type CoachData, type HojeData, type Pa
 import { AREA_ICON, BottomNav, Logo, LogoMark, ScoreRing, Scaled } from '../components/ui'
 import Aprender from './Aprender'
 import Registrar from './Registrar'
-import type { Area } from '../lib/model'
+import type { Area } from '../lib/types'
 
 /* Dados ilustrativos (exemplo) usados só nas vitrines da landing. */
 const DEMO_HOJE: HojeData = {
@@ -54,7 +54,7 @@ const HERO_ROWS: { a: Area; v: number }[] = [
   { a: 'biblia', v: 9.0 }, { a: 'sono', v: 8.0 }, { a: 'foco', v: 8.5 },
 ]
 const ROW_NOME: Record<Area, string> = {
-  habitos: 'Hábitos', treino: 'Treino', financas: 'Finanças', vendas: 'Vendas', biblia: 'Bíblia', sono: 'Sono', foco: 'Foco',
+  habitos: 'Hábitos', treino: 'Treino', financas: 'Finanças', vendas: 'Vendas', biblia: 'Bíblia', sono: 'Sono', foco: 'Foco', leitura: 'Leitura',
 }
 
 function HeroPhone() {

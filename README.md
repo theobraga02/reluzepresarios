@@ -24,3 +24,20 @@ Vercel (Vite). O `vercel.json` já faz o fallback das rotas para o `index.html`.
 - Livros em *Aprender* são obras reais; cursos e vídeos são sugestões de **exemplo**, sem link.
 - Telas da landing usam dados de exemplo (marcado na página).
 - Conteúdo financeiro é educativo; não é recomendação de investimento.
+
+## IA (Coach, cursos e eventos)
+
+A função `api/ia.ts` (Vercel) usa uma cadeia de IAs gratuitas — Gemini → Groq → OpenRouter — e busca na web (Tavily ou Brave) para achar cursos e eventos. Todo link é aberto pelo servidor antes de aparecer no app.
+
+Variáveis de ambiente (Vercel → Settings → Environment Variables):
+
+| Variável | Para quê |
+| --- | --- |
+| `GEMINI_API_KEY` | IA principal (Google AI Studio, plano gratuito) |
+| `GROQ_API_KEY` | reserva 1 |
+| `OPENROUTER_API_KEY` | reserva 2 |
+| `TAVILY_API_KEY` ou `BRAVE_API_KEY` | busca na web (cursos e eventos) |
+
+Sem chaves o app funciona normalmente com o Coach local e o catálogo. Para testar a API localmente use `vercel dev`. O usuário precisa ativar a IA em **Mais**; só um resumo numérico é enviado.
+
+Dados: salvos no aparelho (`localStorage`). Importa backups exportados pelo app antigo. Login/sincronização (Supabase) do app antigo não foi migrado.
