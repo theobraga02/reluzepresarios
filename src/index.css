@@ -227,9 +227,9 @@ figcaption p { font-size: 12px; line-height: 1.5; color: #4a4a4f; margin-top: 6p
 .checks button.on span, .toggle.on span { background: #f4f4f5; border-color: #f4f4f5; color: #0a0a0b; }
 .toggle { margin-top: 6px; }
 .fld { display: flex; flex-direction: column; gap: 5px; font-size: 11px; color: var(--mut); }
-.fld div { display: flex; align-items: center; gap: 8px; background: #0f0f10; border: 1px solid #2b2b2e; border-radius: 9px; padding: 0 10px; }
+.fld > div:not(.chips) { display: flex; align-items: center; gap: 8px; background: #0f0f10; border: 1px solid #2b2b2e; border-radius: 9px; padding: 0 10px; }
 .fld input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: var(--tx); padding: 9px 0; font-size: 13px; }
-.fld div:focus-within { border-color: #7a7a80; }
+.fld > div:not(.chips):focus-within { border-color: #7a7a80; }
 .fld em { font-style: normal; font-size: 11px; color: var(--mut); }
 
 /* aprender */
@@ -384,3 +384,47 @@ a.row { color: inherit; }
   .showcase__row { justify-content: flex-start; }
   .foot { flex-direction: column; align-items: flex-start; }
 }
+
+/* ───────────── otimização para celular ───────────── */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+a, button, input, textarea, label { touch-action: manipulation; }
+.scr-body { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.sheet__body { padding-bottom: calc(20px + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+.scr-head { padding-top: calc(22px + env(safe-area-inset-top)); }
+.chips button, .kbtn, .act, .checks button, .toggle { min-height: 40px; }
+
+@media (max-width: 639px) {
+  .app-root { display: block; padding: 0; }
+  .app-frame { max-width: none; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; }
+  .app-frame .scr { font-size: 15px; }
+  .app-frame .scr-head h2 { font-size: 22px; }
+  .app-frame .scr-body { padding: 4px 16px 20px; gap: 12px; }
+  .app-frame .scr-head { padding-left: 16px; padding-right: 16px; }
+  .app-frame input, .app-frame textarea, .app-frame select { font-size: 16px !important; }
+  .app-frame .fld input, .app-frame .fld textarea { padding: 11px 0; }
+  .app-frame .icon-btn, .app-frame .x-btn { width: 44px; height: 44px; }
+  .app-frame .row { min-height: 56px; padding: 12px; }
+  .app-frame .row__mark { width: 26px; height: 26px; border-radius: 8px; }
+  .app-frame .seg button { padding: 10px 0; font-size: 12.5px; }
+  .app-frame .bnav { padding-top: 6px; }
+  .app-frame .bnav a { min-height: 48px; justify-content: center; font-size: 10.5px; }
+  .app-frame .card { padding: 14px; }
+  .app-frame .stat b { font-size: 17px; }
+  .app-frame .evento__acoes .kbtn { padding: 10px 14px; font-size: 12px; min-height: 44px; }
+  .app-frame .chatbar input { padding: 12px 16px; }
+  .exrow { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .exrow > .fld:first-child { grid-column: 1 / -1; }
+  .exrow > .icon-btn { grid-column: 4; justify-self: end; }
+  .sheet { max-height: 92%; }
+}
+@media (max-width: 380px) {
+  .app-frame .grid2 { gap: 8px; }
+  .app-frame .scr-body { padding-left: 12px; padding-right: 12px; }
+}
+@media (hover: none) { .btn-white:hover, .icon-btn:hover { background: inherit; } }
+button.row__mark { position: relative; }
+button.row__mark::before { content: ""; position: absolute; inset: -10px; }
+.exrow > * { min-width: 0; }
+.fld input { width: 100%; }
+.grid2 > * { min-width: 0; }

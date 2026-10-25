@@ -1,16 +1,16 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
-import Landing from './pages/Landing'
-import Hoje from './pages/Hoje'
-import Painel from './pages/Painel'
-import Registrar from './pages/Registrar'
-import Aprender from './pages/Aprender'
-import Coach from './pages/Coach'
-import Agenda from './pages/Agenda'
-import Rede from './pages/Rede'
-import Negocio from './pages/Negocio'
-import Biblia from './pages/Biblia'
-import Mais from './pages/Mais'
+const Landing = lazy(() => import('./pages/Landing'))
+const Hoje = lazy(() => import('./pages/Hoje'))
+const Painel = lazy(() => import('./pages/Painel'))
+const Registrar = lazy(() => import('./pages/Registrar'))
+const Aprender = lazy(() => import('./pages/Aprender'))
+const Coach = lazy(() => import('./pages/Coach'))
+const Agenda = lazy(() => import('./pages/Agenda'))
+const Rede = lazy(() => import('./pages/Rede'))
+const Negocio = lazy(() => import('./pages/Negocio'))
+const Biblia = lazy(() => import('./pages/Biblia'))
+const Mais = lazy(() => import('./pages/Mais'))
 
 function ScrollTop() {
   const { pathname } = useLocation()
@@ -24,7 +24,9 @@ function AppFrame() {
   return (
     <div className="app-root">
       <div className="app-frame">
-        <Outlet />
+        <Suspense fallback={<div className="scr" aria-busy="true" />}>
+          <Outlet />
+        </Suspense>
       </div>
     </div>
   )
@@ -32,7 +34,7 @@ function AppFrame() {
 
 export default function App() {
   return (
-    <>
+    <Suspense fallback={null}>
       <ScrollTop />
       <Routes>
         <Route path="/" element={<Landing />} />
@@ -51,6 +53,6 @@ export default function App() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </>
+    </Suspense>
   )
 }
