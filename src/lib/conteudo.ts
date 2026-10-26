@@ -2,19 +2,16 @@ import type { ApproachScript, BusinessProfile, Item, NetworkingEvent, Track } fr
 import { addDays, keyOf } from './date'
 
 /* ───────── Versículos ─────────
- * Texto: Almeida Revista e Corrigida (ARC), conferido palavra por palavra com a edição publicada em bibliaon.com.
- * Os versículos do app antigo estavam rotulados como "Almeida", mas eram paráfrases modernas — aqui foram corrigidos. */
-export const TRADUCAO = 'Almeida Revista e Corrigida'
+ * Texto: Almeida 1911 (domínio público), extraído do mesmo arquivo usado no leitor. A ortografia é a da edição original. */
+import versiculosJson from './versiculos.json'
 
-export const VERSICULOS = [
-  { referencia: 'Provérbios 16:3', tema: 'confiança', texto: 'Confia ao SENHOR as tuas obras, e teus pensamentos serão estabelecidos.' },
-  { referencia: 'Filipenses 4:13', tema: 'força', texto: 'Posso todas as coisas naquele que me fortalece.' },
-  { referencia: 'Jeremias 29:11', tema: 'esperança', texto: 'Porque eu bem sei os pensamentos que penso de vós, diz o SENHOR; pensamentos de paz e não de mal, para vos dar o fim que esperais.' },
-  { referencia: 'Tiago 1:5', tema: 'sabedoria', texto: 'E, se algum de vós tem falta de sabedoria, peça-a a Deus, que a todos dá liberalmente e não o lança em rosto; e ser-lhe-á dada.' },
-  { referencia: 'Josué 1:9', tema: 'coragem', texto: 'Não to mandei eu? Esforça-te e tem bom ânimo; não pasmes, nem te espantes, porque o SENHOR, teu Deus, é contigo, por onde quer que andares.' },
-  { referencia: 'Mateus 6:33', tema: 'prioridade', texto: 'Mas buscai primeiro o Reino de Deus, e a sua justiça, e todas essas coisas vos serão acrescentadas.' },
-  { referencia: 'Gálatas 6:9', tema: 'perseverança', texto: 'E não nos cansemos de fazer o bem, porque a seu tempo ceifaremos, se não houvermos desfalecido.' },
-]
+export const TRADUCAO = 'Almeida 1911'
+
+export const VERSICULOS = (versiculosJson as { ref: string; tema: string; texto: string }[]).map((v) => ({
+  referencia: v.ref,
+  tema: v.tema,
+  texto: /[.!?:;]$/.test(v.texto) ? v.texto : v.texto + '.',
+}))
 
 /* ───────── Dicas de networking (do app antigo) ───────── */
 export const DICAS_NETWORKING = [

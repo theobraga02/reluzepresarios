@@ -41,6 +41,7 @@ export function normalizeData(raw: unknown): AppData {
     clients: arr(src.clients, []),
     networkingContacts: arr(src.networkingContacts, []),
     savedCourses: arr(src.savedCourses, []),
+    leitor: { last: src.leitor?.last, marcados: arr(src.leitor?.marcados, []) },
     trilhas: src.trilhas && typeof src.trilhas === 'object' ? { ...src.trilhas } : {},
     settings: {
       ...base.settings,

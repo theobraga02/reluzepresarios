@@ -202,6 +202,8 @@ export interface AppData {
   clients: Client[]
   networkingContacts: NetworkingContact[]
   savedCourses: string[]
+  /** Leitor da Bíblia: onde parou e versículos marcados ('GEN.1.1'). */
+  leitor: { last?: { livro: string; cap: number }; marcados: string[] }
   /** Semana atual de cada trilha (1 = primeira). */
   trilhas: Record<string, number>
   settings: Settings

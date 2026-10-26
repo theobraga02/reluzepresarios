@@ -49,6 +49,7 @@ export function getDefaultData(): AppData {
     networkingContacts: [],
     savedCourses: [],
     trilhas: {},
+    leitor: { marcados: [] },
     settings: {
       metas: { vendasDia: 3, focoMin: 60, leituraPaginas: 10, sonoHoras: 8, treinosSemana: 4 },
       aiConsent: false,

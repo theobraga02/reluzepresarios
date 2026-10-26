@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, BookOpen, Cloud, LogOut, RefreshCw, Briefcase, CalendarDays, Download, FlaskConical, Handshake, HeartHandshake, Sparkles, Trash2, Upload } from 'lucide-react'
 import { BottomNav } from '../components/ui'
 import { Btn, Field, num, Toggle } from '../components/kit'
-import { apagarNuvem, criarConta, entrar, novaSenha, recuperarSenha, sair, sincronizar, useCloud } from '../lib/cloud'
+import { apagarNuvem, criarConta, entrar, novaSenha, recuperarSenha, sair, sincronizar, useCloud, cliente } from '../lib/cloud'
 import { exportJSON, importJSON, loadSample, resetAll, setConsent, update, useData } from '../lib/store'
 
 const ATALHOS = [
@@ -12,10 +12,18 @@ const ATALHOS = [
   { to: '/app/rede', Icon: Handshake, l: 'Rede e eventos' },
   { to: '/app/negocio', Icon: Briefcase, l: 'Meu negócio' },
   { to: '/app/biblia', Icon: BookOpen, l: 'Bíblia' },
+  { to: '/app/habitos', Icon: BookOpen, l: 'Catálogo de hábitos' },
 ]
 
 function Conta() {
   const c = useCloud()
+  const [adm, setAdm] = useState(false)
+  useEffect(() => {
+    if (!c.email) return
+    let vivo = true
+    void cliente().then((cl) => cl.rpc('empresario_is_admin')).then(({ data }) => vivo && setAdm(data === true)).catch(() => {})
+    return () => { vivo = false }
+  }, [c.email])
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [nova, setNova] = useState('')
@@ -42,6 +50,7 @@ function Conta() {
           {busy ? 'Sincronizando…' : c.phase === 'error' ? 'Sem sincronizar.' : c.syncedAt ? `Sincronizado às ${new Date(c.syncedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.` : ''}
         </p>
         <button type="button" className="act" onClick={() => void sincronizar()} disabled={busy}><RefreshCw size={14} /> Sincronizar agora</button>
+        {adm && <Link to="/admin" className="act">Painel de administração</Link>}
         <button type="button" className="act" onClick={() => void sair()}><LogOut size={14} /> Sair da conta</button>
         {apagar ? (
           <div className="confirma"><p className="fine">Apagar seus dados da nuvem e sair? Os dados deste aparelho ficam.</p><Btn kind="danger" onClick={() => { void apagarNuvem(); setApagar(false) }}>Apagar da nuvem</Btn><Btn kind="ghost" onClick={() => setApagar(false)}>Cancelar</Btn></div>

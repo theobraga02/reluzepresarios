@@ -5,8 +5,8 @@ import { getData, onDataChange, replaceAll } from './store'
 import type { AppData } from './types'
 
 // URL e chave publicável são públicas por desenho (a segurança vem das regras RLS da tabela).
-const URL_ = (import.meta.env.NEXT_PUBLIC_emp_SUPABASE_URL as string | undefined) || 'https://wmajikhplenbyligglhv.supabase.co'
-const KEY_ =
+export const SB_URL = (import.meta.env.NEXT_PUBLIC_emp_SUPABASE_URL as string | undefined) || 'https://wmajikhplenbyligglhv.supabase.co'
+export const SB_KEY =
   (import.meta.env.NEXT_PUBLIC_emp_SUPABASE_PUBLISHABLE_KEY as string | undefined) || 'sb_publishable_tS5Ztr1uKKlfjZYahLkk1Q_GHbZ65B8'
 const TABLE = 'empresario_dados'
 const META = 'empresario:cloud'
@@ -33,10 +33,14 @@ let applying = false
 let dirty = false
 let timer: number | undefined
 
+export async function cliente() {
+  return sb()
+}
+
 async function sb() {
   if (client) return client
   const { createClient } = await import('@supabase/supabase-js')
-  client = createClient(URL_, KEY_, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
+  client = createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
   client.auth.onAuthStateChange((ev, session) => {
     if (ev === 'PASSWORD_RECOVERY') set({ recovery: true })
     if (session?.user && session.user.id !== userId) void entrou(session.user.id, session.user.email ?? '')
@@ -80,6 +84,7 @@ export function mesclar(a: AppData, b: AppData): AppData {
     focusRecords: uniao(a.focusRecords, b.focusRecords), readingRecords: uniao(a.readingRecords, b.readingRecords),
     sleepRecords: uniao(a.sleepRecords, b.sleepRecords),
     clients: uniao(a.clients, b.clients), networkingContacts: uniao(a.networkingContacts, b.networkingContacts),
+    leitor: { last: a.leitor.last ?? b.leitor.last, marcados: Array.from(new Set([...a.leitor.marcados, ...b.leitor.marcados])) },
     savedCourses: Array.from(new Set([...a.savedCourses, ...b.savedCourses])), trilhas,
     businessProfile: a.businessProfile.productName || a.businessProfile.area ? a.businessProfile : b.businessProfile,
     aiCourses: maisNovoCursos ? a.aiCourses : b.aiCourses, aiCoursesAt: maisNovoCursos ? a.aiCoursesAt : b.aiCoursesAt,

@@ -11,6 +11,8 @@ const Rede = lazy(() => import('./pages/Rede'))
 const Negocio = lazy(() => import('./pages/Negocio'))
 const Biblia = lazy(() => import('./pages/Biblia'))
 const Mais = lazy(() => import('./pages/Mais'))
+const Habitos = lazy(() => import('./pages/Habitos'))
+const Admin = lazy(() => import('./pages/Admin'))
 
 function ScrollTop() {
   const { pathname } = useLocation()
@@ -48,9 +50,12 @@ export default function App() {
           <Route path="rede" element={<Rede />} />
           <Route path="negocio" element={<Negocio />} />
           <Route path="biblia" element={<Biblia />} />
+          <Route path="biblia/:livro/:cap" element={<Biblia />} />
+          <Route path="habitos" element={<Habitos />} />
           <Route path="mais" element={<Mais />} />
           <Route path="perfil" element={<Navigate to="/app/mais" replace />} />
         </Route>
+        <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

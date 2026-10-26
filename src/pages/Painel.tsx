@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Conquistas } from '../components/Conquistas'
 import { PainelView } from '../components/screens'
 import { type Period, mapaCalor, negocio, pessoal, resumo, serie, variacao } from '../lib/analytics'
 import { moeda } from '../lib/score'
@@ -20,6 +21,8 @@ export default function Painel() {
 
   const extra = (
     <>
+      <Conquistas />
+
       <b className="sec-title">Negócio</b>
       {temNeg ? (
         <>

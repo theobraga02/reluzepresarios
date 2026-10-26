@@ -1,49 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CalendarClock, Check, Flame, Plus, Trash2, User } from 'lucide-react'
 import { BottomNav, ScoreRing, AREA_ICON } from '../components/ui'
-import { Btn, Field, Sheet } from '../components/kit'
+import { NovoHabito } from '../components/NovoHabito'
+import { Motivacao } from '../components/Motivacao'
+import { Sino } from '../components/Notificacoes'
+import { confete, useContagem } from '../lib/efeitos'
 import { dateLabel, dayOfYear, fromKey, todayKey } from '../lib/date'
 import { HABIT_AREAS, HABIT_TO_AREA } from '../lib/defaults'
 import { relatorioLocal } from '../lib/coach'
 import { moeda, saldoDia, scoreDia, sequencia } from '../lib/score'
-import { addHabit, removeHabit, toggleHabit, uid, useData } from '../lib/store'
+import { removeHabit, toggleHabit, useData } from '../lib/store'
 import { TRADUCAO, VERSICULOS } from '../lib/conteudo'
-import type { HabitArea } from '../lib/types'
-
-function NovoHabito({ onClose }: { onClose: () => void }) {
-  const [title, setTitle] = useState('')
-  const [area, setArea] = useState<HabitArea>('foco')
-  const [alvo, setAlvo] = useState('')
-  const [unidade, setUnidade] = useState('')
-  const info = HABIT_AREAS.find((a) => a.id === area)!
-  return (
-    <Sheet title="Novo hábito" onClose={onClose}>
-      <Field label="Nome do hábito" text value={title} onChange={setTitle} placeholder="Ex.: Beber 2 L de água" />
-      <div className="fld">
-        <span>Área</span>
-        <div className="chips">
-          {HABIT_AREAS.map((a) => (
-            <button key={a.id} type="button" className={area === a.id ? 'on' : ''} onClick={() => setArea(a.id)}>{a.icon} {a.label}</button>
-          ))}
-        </div>
-      </div>
-      <div className="grid2">
-        <Field label="Meta (opcional)" value={alvo} onChange={setAlvo} />
-        <Field label="Unidade" text value={unidade} onChange={setUnidade} placeholder="min, páginas…" />
-      </div>
-      <Btn
-        disabled={!title.trim()}
-        onClick={() => {
-          addHabit({ id: uid('h'), title: title.trim(), area, icon: info.icon, target: parseFloat(alvo.replace(',', '.')) || undefined, unit: unidade.trim() || undefined })
-          onClose()
-        }}
-      >
-        Adicionar hábito
-      </Btn>
-    </Sheet>
-  )
-}
 
 export default function Hoje() {
   const d = useData()
@@ -62,6 +30,12 @@ export default function Hoje() {
   const vendasHoje = d.saleRecords.filter((r) => r.date === key).length
   const treinoHoje = d.workoutRecords.some((r) => r.date === key)
   const seq = sequencia(d)
+  const pct = useContagem(d.habits.length ? Math.round((nFeitos / d.habits.length) * 100) : 0)
+  const antes = useRef(nFeitos)
+  useEffect(() => {
+    if (d.habits.length > 0 && nFeitos === d.habits.length && antes.current < nFeitos) void confete(true)
+    antes.current = nFeitos
+  }, [nFeitos, d.habits.length])
 
   return (
     <div className="scr">
@@ -70,10 +44,12 @@ export default function Hoje() {
           <h2>Hoje</h2>
           <p className="scr-sub">{dateLabel(hoje)}</p>
         </div>
-        <Link to="/app/mais" className="icon-btn" aria-label="Mais opções"><User size={16} strokeWidth={1.6} /></Link>
+        <div className="head-act"><Sino /><Link to="/app/mais" className="icon-btn" aria-label="Mais opções"><User size={16} strokeWidth={1.6} /></Link></div>
       </header>
       <div className="scr-body">
         {d.exemplo && <p className="badge-ex">Exibindo dados de exemplo</p>}
+
+        <Motivacao />
 
         <div className="card verse">
           <small>Versículo do dia · {TRADUCAO}</small>
@@ -82,7 +58,7 @@ export default function Hoje() {
         </div>
 
         <div className="grid2">
-          <div className="card stat"><span className="chip-ic"><AREA_ICON.habitos size={13} strokeWidth={1.7} /></span><small>Hábitos</small><b>{nFeitos}/{d.habits.length}</b></div>
+          <div className="card stat"><span className="chip-ic"><AREA_ICON.habitos size={13} strokeWidth={1.7} /></span><small>Hábitos</small><b>{nFeitos}/{d.habits.length}</b><i className="bar"><u style={{ width: `${pct}%` }} /></i></div>
           <div className="card stat"><span className="chip-ic"><AREA_ICON.treino size={13} strokeWidth={1.7} /></span><small>Treino</small><b>{treinoHoje ? '1/1' : '0/1'}</b></div>
           <div className="card stat"><span className="chip-ic"><AREA_ICON.financas size={13} strokeWidth={1.7} /></span><small>Finanças</small><b>{moeda(saldoDia(d, key))}</b></div>
           <div className="card stat"><span className="chip-ic"><AREA_ICON.vendas size={13} strokeWidth={1.7} /></span><small>Vendas</small><b>{vendasHoje}/{d.settings.metas.vendasDia}</b></div>
@@ -117,7 +93,10 @@ export default function Hoje() {
             )
           })}
         </ul>
-        <button type="button" className="act" onClick={() => setNovo(true)}><Plus size={14} /> Novo hábito</button>
+        <div className="grid2">
+          <Link to="/app/habitos" className="act"><Plus size={14} /> Escolher hábitos</Link>
+          <button type="button" className="act" onClick={() => setNovo(true)}><Plus size={14} /> Criar o meu</button>
+        </div>
 
         {prox && (
           <Link to="/app/agenda" className="card next">
