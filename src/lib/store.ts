@@ -88,6 +88,10 @@ const subscribe = (f: () => void) => {
 
 export const useData = () => useSyncExternalStore(subscribe, () => state)
 export const getData = () => state
+/** Escuta mudanças (usado pela sincronização em nuvem). */
+export const onDataChange = subscribe
+/** Substitui tudo (já normalizado) — usado ao receber dados da nuvem. */
+export const replaceAll = (d: unknown) => commit(normalizeData(d))
 export const update = (fn: (prev: AppData) => AppData) => commit(fn(state))
 
 export const uid = (p = 'r') => `${p}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`

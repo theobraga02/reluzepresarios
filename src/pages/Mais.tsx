@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, BookOpen, Briefcase, CalendarDays, Download, FlaskConical, Handshake, HeartHandshake, Sparkles, Trash2, Upload } from 'lucide-react'
+import { Bell, BookOpen, Cloud, LogOut, RefreshCw, Briefcase, CalendarDays, Download, FlaskConical, Handshake, HeartHandshake, Sparkles, Trash2, Upload } from 'lucide-react'
 import { BottomNav } from '../components/ui'
 import { Btn, Field, num, Toggle } from '../components/kit'
+import { apagarNuvem, criarConta, entrar, novaSenha, recuperarSenha, sair, sincronizar, useCloud } from '../lib/cloud'
 import { exportJSON, importJSON, loadSample, resetAll, setConsent, update, useData } from '../lib/store'
 
 const ATALHOS = [
@@ -12,6 +13,62 @@ const ATALHOS = [
   { to: '/app/negocio', Icon: Briefcase, l: 'Meu negócio' },
   { to: '/app/biblia', Icon: BookOpen, l: 'Bíblia' },
 ]
+
+function Conta() {
+  const c = useCloud()
+  const [email, setEmail] = useState('')
+  const [senha, setSenha] = useState('')
+  const [nova, setNova] = useState('')
+  const [apagar, setApagar] = useState(false)
+  const busy = c.phase === 'busy'
+
+  if (c.recovery) {
+    return (
+      <div className="card list-card">
+        <b><Cloud size={13} /> Criar nova senha</b>
+        <Field label="Nova senha (mín. 6)" text value={nova} onChange={setNova} />
+        <Btn disabled={nova.length < 6 || busy} onClick={() => void novaSenha(nova)}>Salvar nova senha</Btn>
+        {c.msg && <p className="aviso" role="status">{c.msg}</p>}
+      </div>
+    )
+  }
+
+  if (c.email) {
+    return (
+      <div className="card list-card">
+        <b><Cloud size={13} /> Conta e nuvem</b>
+        <p className="fine">
+          {c.email}<br />
+          {busy ? 'Sincronizando…' : c.phase === 'error' ? 'Sem sincronizar.' : c.syncedAt ? `Sincronizado às ${new Date(c.syncedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.` : ''}
+        </p>
+        <button type="button" className="act" onClick={() => void sincronizar()} disabled={busy}><RefreshCw size={14} /> Sincronizar agora</button>
+        <button type="button" className="act" onClick={() => void sair()}><LogOut size={14} /> Sair da conta</button>
+        {apagar ? (
+          <div className="confirma"><p className="fine">Apagar seus dados da nuvem e sair? Os dados deste aparelho ficam.</p><Btn kind="danger" onClick={() => { void apagarNuvem(); setApagar(false) }}>Apagar da nuvem</Btn><Btn kind="ghost" onClick={() => setApagar(false)}>Cancelar</Btn></div>
+        ) : (
+          <button type="button" className="act act--danger" onClick={() => setApagar(true)}><Trash2 size={14} /> Apagar dados da nuvem</button>
+        )}
+        {c.msg && <p className="aviso" role="status">{c.msg}</p>}
+      </div>
+    )
+  }
+
+  return (
+    <div className="card list-card">
+      <b><Cloud size={13} /> Conta e nuvem (opcional)</b>
+      <p className="fine">Entre para guardar seus dados na nuvem e usar em vários aparelhos. Sem conta, tudo continua só neste aparelho.</p>
+      <Field label="E-mail" text value={email} onChange={setEmail} placeholder="voce@email.com" />
+      <label className="fld">
+        <span>Senha (mín. 6)</span>
+        <div><input type="password" autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} /></div>
+      </label>
+      <Btn disabled={busy || !email.includes('@') || senha.length < 6} onClick={() => void entrar(email, senha)}>{busy ? 'Aguarde…' : 'Entrar'}</Btn>
+      <Btn kind="ghost" disabled={busy || !email.includes('@') || senha.length < 6} onClick={() => void criarConta(email, senha)}>Criar conta</Btn>
+      <button type="button" className="act" disabled={!email.includes('@')} onClick={() => void recuperarSenha(email)}>Esqueci minha senha</button>
+      {c.msg && <p className="aviso" role="status">{c.msg}</p>}
+    </div>
+  )
+}
 
 export default function Mais() {
   const d = useData()
@@ -45,6 +102,8 @@ export default function Mais() {
             <li key={to}><Link to={to} className="row"><span className="row__mark"><Icon size={12} strokeWidth={1.7} /></span><span className="row__txt"><b>{l}</b></span></Link></li>
           ))}
         </ul>
+
+        <Conta />
 
         <div className="card list-card">
           <b>IA (Gemini, Groq, OpenRouter)</b>
@@ -100,7 +159,7 @@ export default function Mais() {
 
         <p className="fine">
           Empresário v2 · Versículos: Almeida Revista e Corrigida. Cursos, livros e vídeos listados são sugestões; confira preço e certificação no site de origem.
-          O app não substitui orientação financeira, jurídica ou médica. Login e sincronização em nuvem do app antigo não foram migrados.
+          O app não substitui orientação financeira, jurídica ou médica.
         </p>
       </div>
       <BottomNav />

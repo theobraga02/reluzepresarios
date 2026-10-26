@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Só chaves públicas (URL e chave publicável do Supabase) usam o prefixo NEXT_PUBLIC_.
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
   build: {
     rollupOptions: {
       output: {
