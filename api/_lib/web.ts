@@ -1,11 +1,11 @@
-/* Busca na web (Tavily ou Brave) + verificação de links com proteção contra SSRF. */
+/* Busca na web (Tavily) + verificação de links com proteção contra SSRF. */
 import { lookup } from 'node:dns/promises'
 import net from 'node:net'
 
 export type Achado = { titulo: string; url: string; trecho: string }
 const env = (k: string) => (process.env[k] ?? '').trim()
 
-export const temBusca = () => Boolean(env('TAVILY_API_KEY') || env('BRAVE_API_KEY'))
+export const temBusca = () => Boolean(env('TAVILY_API_KEY'))
 
 async function comTimeout(url: string, init: RequestInit, ms = 8000) {
   const ctl = new AbortController()
@@ -27,15 +27,6 @@ export async function buscar(consulta: string, max = 6): Promise<Achado[]> {
     if (r.ok) {
       const j: any = await r.json()
       return (j.results ?? []).map((x: any) => ({ titulo: String(x.title ?? ''), url: String(x.url ?? ''), trecho: String(x.content ?? '').slice(0, 280) }))
-    }
-  }
-  if (env('BRAVE_API_KEY')) {
-    const r = await comTimeout(`https://api.search.brave.com/res/v1/web/search?count=${max}&q=${encodeURIComponent(consulta)}`, {
-      headers: { 'x-subscription-token': env('BRAVE_API_KEY'), accept: 'application/json' },
-    })
-    if (r.ok) {
-      const j: any = await r.json()
-      return (j.web?.results ?? []).map((x: any) => ({ titulo: String(x.title ?? ''), url: String(x.url ?? ''), trecho: String(x.description ?? '').replace(/<[^>]+>/g, '').slice(0, 280) }))
     }
   }
   return []

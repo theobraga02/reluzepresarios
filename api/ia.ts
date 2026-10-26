@@ -85,7 +85,7 @@ async function pesquisar(consultas: string[]): Promise<Achado[]> {
 }
 
 async function cursos(b: any) {
-  if (!temBusca()) return { erro: 'A busca na web não está configurada (TAVILY_API_KEY ou BRAVE_API_KEY).', codigo: 'config' }
+  if (!temBusca()) return { erro: 'A busca na web não está configurada (TAVILY_API_KEY).', codigo: 'config' }
   const areas: string[] = (Array.isArray(b.areas) ? b.areas : []).map((a: unknown) => str(a, 30)).filter(Boolean).slice(0, 3)
   const ramo = str(b.perfil?.area, 60)
   const achados = await pesquisar(
@@ -113,7 +113,7 @@ async function cursos(b: any) {
 }
 
 async function eventos(b: any) {
-  if (!temBusca()) return { erro: 'A busca na web não está configurada (TAVILY_API_KEY ou BRAVE_API_KEY).', codigo: 'config' }
+  if (!temBusca()) return { erro: 'A busca na web não está configurada (TAVILY_API_KEY).', codigo: 'config' }
   const cidade = str(b.cidade, 60)
   const ramo = str(b.area, 60)
   const achados = await pesquisar([
