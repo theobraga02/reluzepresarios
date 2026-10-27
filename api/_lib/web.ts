@@ -3,7 +3,19 @@ import { lookup } from 'node:dns/promises'
 import net from 'node:net'
 
 export type Achado = { titulo: string; url: string; trecho: string }
-const env = (k: string) => (process.env[k] ?? '').trim()
+const ALIAS: Record<string, string[]> = {
+  GEMINI_API_KEY: ['gemini', 'GEMINI_KEY', 'GOOGLE_API_KEY'],
+  GROQ_API_KEY: ['groq', 'GROQ_KEY'],
+  OPENROUTER_API_KEY: ['openrouter_key', 'openrouter', 'OPENROUTER_KEY'],
+  TAVILY_API_KEY: ['tavily_key', 'tavily', 'TAVILY_KEY'],
+}
+const env = (k: string) => {
+  for (const n of [k, ...(ALIAS[k] ?? [])]) {
+    const v = (process.env[n] ?? '').trim()
+    if (v) return v
+  }
+  return ''
+}
 
 export const temBusca = () => Boolean(env('TAVILY_API_KEY'))
 
