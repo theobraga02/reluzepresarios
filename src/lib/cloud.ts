@@ -11,15 +11,23 @@ export const SB_KEY =
 const TABLE = 'empresario_dados'
 const META = 'empresario:cloud'
 
+export const TERMOS_V = '1'
+const termosKey = (uid: string) => `empresario:termos:${uid}`
+const termosLocal = (uid: string) => { try { return localStorage.getItem(termosKey(uid)) === TERMOS_V } catch { return false } }
+
 export type CloudState = {
   phase: 'off' | 'busy' | 'ok' | 'error'
+  /** false enquanto o app confere se já existe uma sessão salva neste aparelho. */
+  pronto: boolean
+  uid?: string
+  termos?: boolean
   email?: string
   syncedAt?: string
   msg?: string
   recovery?: boolean
 }
 
-let st: CloudState = { phase: 'off' }
+let st: CloudState = { phase: 'off', pronto: false }
 const subs = new Set<() => void>()
 const set = (p: Partial<CloudState>) => {
   st = { ...st, ...p }
@@ -43,10 +51,10 @@ async function sb() {
   client = createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
   client.auth.onAuthStateChange((ev, session) => {
     if (ev === 'PASSWORD_RECOVERY') set({ recovery: true })
-    if (session?.user && session.user.id !== userId) void entrou(session.user.id, session.user.email ?? '')
+    if (session?.user && session.user.id !== userId) void entrou(session.user.id, session.user.email ?? '', session.user.user_metadata)
     if (!session && userId) {
       userId = null
-      set({ phase: 'off', email: undefined, syncedAt: undefined, msg: undefined })
+      set({ phase: 'off', pronto: true, email: undefined, uid: undefined, termos: undefined, syncedAt: undefined, msg: undefined })
     }
   })
   return client
@@ -143,9 +151,9 @@ export async function sincronizar() {
   }
 }
 
-async function entrou(id: string, email: string) {
+async function entrou(id: string, email: string, meta?: Record<string, unknown>) {
   userId = id
-  set({ phase: 'busy', email, msg: undefined })
+  set({ phase: 'busy', pronto: true, uid: id, email, termos: meta?.termos_v === TERMOS_V || termosLocal(id), msg: undefined })
   await sincronizar()
 }
 
@@ -167,7 +175,15 @@ export function iniciarNuvem() {
   try {
     temSessao = Object.keys(localStorage).some((k) => k.startsWith('sb-') && k.endsWith('-auth-token'))
   } catch { /* ignora */ }
-  if (temSessao || location.hash.includes('access_token') || location.search.includes('code=')) void sb().then((c) => c.auth.getSession())
+  if (temSessao || location.hash.includes('access_token') || location.search.includes('code=')) {
+    void sb()
+      .then(async (c) => {
+        const { data } = await c.auth.getSession()
+        if (data.session && !userId) await entrou(data.session.user.id, data.session.user.email ?? '', data.session.user.user_metadata)
+      })
+      .catch(() => {})
+      .finally(() => set({ pronto: true }))
+  } else set({ pronto: true })
 }
 
 const traduz = (m: string) =>
@@ -187,10 +203,10 @@ export async function entrar(email: string, senha: string) {
   return true
 }
 
-export async function criarConta(email: string, senha: string) {
+export async function criarConta(email: string, senha: string, aceitou = false) {
   const c = await sb()
   set({ phase: 'busy', msg: undefined })
-  const { data, error } = await c.auth.signUp({ email: email.trim(), password: senha, options: { emailRedirectTo: `${location.origin}/app/mais` } })
+  const { data, error } = await c.auth.signUp({ email: email.trim(), password: senha, options: { emailRedirectTo: `${location.origin}/app`, data: aceitou ? { termos_v: TERMOS_V, termos_em: new Date().toISOString() } : {} } })
   if (error) { set({ phase: 'off', msg: traduz(error.message) }); return false }
   if (!data.session) set({ phase: 'off', msg: 'Enviamos um link de confirmação para o seu e-mail. Abra-o e depois entre aqui.' })
   return true
@@ -198,7 +214,7 @@ export async function criarConta(email: string, senha: string) {
 
 export async function recuperarSenha(email: string) {
   const c = await sb()
-  const { error } = await c.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${location.origin}/app/mais` })
+  const { error } = await c.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${location.origin}/app` })
   set({ msg: error ? traduz(error.message) : 'Se esse e-mail tiver conta, enviamos um link para criar nova senha.' })
 }
 
@@ -223,4 +239,13 @@ export async function apagarNuvem() {
   window.clearTimeout(timer)
   await client.auth.signOut()
   set({ msg: 'Dados da nuvem apagados e conta desconectada. Os dados deste aparelho continuam aqui.' })
+}
+
+export async function aceitarTermos() {
+  const c = await sb()
+  const { error } = await c.auth.updateUser({ data: { termos_v: TERMOS_V, termos_em: new Date().toISOString() } })
+  if (error) { set({ msg: 'Não consegui registrar o aceite agora. Tente de novo.' }); return false }
+  try { if (userId) localStorage.setItem(termosKey(userId), TERMOS_V) } catch { /* ignora */ }
+  set({ termos: true, msg: undefined })
+  return true
 }

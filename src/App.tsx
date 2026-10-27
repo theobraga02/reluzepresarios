@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { Porteiro } from './components/Porteiro'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 const Landing = lazy(() => import('./pages/Landing'))
 const Hoje = lazy(() => import('./pages/Hoje'))
 const Painel = lazy(() => import('./pages/Painel'))
@@ -12,6 +13,7 @@ const Negocio = lazy(() => import('./pages/Negocio'))
 const Biblia = lazy(() => import('./pages/Biblia'))
 const Mais = lazy(() => import('./pages/Mais'))
 const Habitos = lazy(() => import('./pages/Habitos'))
+const Termos = lazy(() => import('./pages/Termos'))
 const Admin = lazy(() => import('./pages/Admin'))
 
 function ScrollTop() {
@@ -27,7 +29,7 @@ function AppFrame() {
     <div className="app-root">
       <div className="app-frame">
         <Suspense fallback={<div className="scr" aria-busy="true" />}>
-          <Outlet />
+          <Porteiro />
         </Suspense>
       </div>
     </div>
@@ -55,6 +57,7 @@ export default function App() {
           <Route path="mais" element={<Mais />} />
           <Route path="perfil" element={<Navigate to="/app/mais" replace />} />
         </Route>
+        <Route path="/termos" element={<Termos />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

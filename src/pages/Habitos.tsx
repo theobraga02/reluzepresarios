@@ -1,4 +1,8 @@
 import { useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { concluirOnboarding } from '../components/Porteiro'
+import { useCloud } from '../lib/cloud'
+import { confete } from '../lib/efeitos'
 import { Check, Plus, Search, Sparkles } from 'lucide-react'
 import { BottomNav } from '../components/ui'
 import { NovoHabito } from '../components/NovoHabito'
@@ -14,6 +18,9 @@ const norm = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCas
 
 export default function Habitos() {
   const d = useData()
+  const nav = useNavigate()
+  const cloud = useCloud()
+  const inicio = useLocation().search.includes('inicio=1')
   const catalogo = useCatalogo()
   const [cat, setCat] = useState<CatId | 'todos'>('todos')
   const [q, setQ] = useState('')
@@ -63,6 +70,13 @@ export default function Habitos() {
 
   return (
     <div className="scr">
+      {inicio && (
+        <div className="card onb">
+          <b>Bem-vindo! Escolha seus hábitos</b>
+          <p className="fine">Toque no + dos hábitos que quer acompanhar. Você pode mudar depois.</p>
+          <button type="button" className="kbtn kbtn--main" disabled={d.habits.length === 0} onClick={() => { concluirOnboarding(cloud.uid); void confete(true); nav('/app', { replace: true }) }}>{d.habits.length === 0 ? 'Escolha pelo menos 1 hábito' : `Concluir com ${d.habits.length} ${d.habits.length === 1 ? 'hábito' : 'hábitos'}`}</button>
+        </div>
+      )}
       <SubHead title="Escolher hábitos" sub={`${d.habits.length} ativos · ${catalogo.length} ideias`} back="/app" />
       <div className="scr-body">
         <form className="buscabar" onSubmit={(e) => e.preventDefault()}>
