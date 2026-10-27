@@ -106,13 +106,13 @@ export default function Mais() {
     <div className="scr">
       <header className="scr-head"><div><h2>Mais</h2><p className="scr-sub">Atalhos, metas e dados</p></div></header>
       <div className="scr-body">
+        <Conta />
+
         <ul className="rows">
           {ATALHOS.map(({ to, Icon, l }) => (
             <li key={to}><Link to={to} className="row"><span className="row__mark"><Icon size={12} strokeWidth={1.7} /></span><span className="row__txt"><b>{l}</b></span></Link></li>
           ))}
         </ul>
-
-        <Conta />
 
         <div className="card list-card">
           <b>IA (Gemini, Groq, OpenRouter)</b>

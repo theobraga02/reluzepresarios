@@ -127,7 +127,7 @@ export default function Landing() {
               <a href="#planos">Planos</a>
               <a href="#sobre">Sobre</a>
             </nav>
-            <Link to="/app" className="btn-dark">Entrar</Link>
+            <Link to="/app/mais" className="btn-dark">Entrar</Link>
           </header>
 
           <div className="hero__main" id="inicio">

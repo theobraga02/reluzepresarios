@@ -5,6 +5,7 @@ import { BottomNav, ScoreRing, AREA_ICON } from '../components/ui'
 import { NovoHabito } from '../components/NovoHabito'
 import { Motivacao } from '../components/Motivacao'
 import { Sino } from '../components/Notificacoes'
+import { useCloud } from '../lib/cloud'
 import { confete, useContagem } from '../lib/efeitos'
 import { dateLabel, dayOfYear, fromKey, todayKey } from '../lib/date'
 import { HABIT_AREAS, HABIT_TO_AREA } from '../lib/defaults'
@@ -15,6 +16,7 @@ import { TRADUCAO, VERSICULOS } from '../lib/conteudo'
 
 export default function Hoje() {
   const d = useData()
+  const nuvem = useCloud()
   const [novo, setNovo] = useState(false)
   const [apagar, setApagar] = useState<string | null>(null)
   const hoje = new Date()
@@ -48,6 +50,8 @@ export default function Hoje() {
       </header>
       <div className="scr-body">
         {d.exemplo && <p className="badge-ex">Exibindo dados de exemplo</p>}
+
+        {!nuvem.email && <Link to="/app/mais" className="card next"><span><small>Conta</small><b>Entrar ou criar conta</b><small>Salve seus dados na nuvem e use em vários aparelhos</small></span></Link>}
 
         <Motivacao />
 
