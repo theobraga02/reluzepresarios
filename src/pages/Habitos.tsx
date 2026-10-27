@@ -86,7 +86,7 @@ export default function Habitos() {
         <div className="chips chips--scroll" role="tablist" aria-label="Categorias">
           <button type="button" role="tab" aria-selected={cat === 'todos'} className={cat === 'todos' ? 'on' : ''} onClick={() => setCat('todos')}>Todos</button>
           {CATEGORIAS.map((c) => (
-            <button key={c.id} type="button" role="tab" aria-selected={cat === c.id} className={cat === c.id ? 'on' : ''} onClick={() => setCat(c.id)}>{c.icone} {c.nome}</button>
+            <button key={c.id} type="button" role="tab" aria-selected={cat === c.id} className={cat === c.id ? 'on' : ''} onClick={() => setCat(c.id)}>{c.nome}</button>
           ))}
         </div>
         <button type="button" className="act" onClick={() => setNovo(true)}><Plus size={14} /> Criar um hábito meu</button>

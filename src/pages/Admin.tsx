@@ -120,7 +120,7 @@ function Habitos() {
         <b>Novo hábito no catálogo</b>
         <Field label="Título" text value={f.titulo} onChange={(v) => setF({ ...f, titulo: v })} />
         <div className="chips">
-          {CATEGORIAS.map((c) => <button key={c.id} type="button" className={f.cat === c.id ? 'on' : ''} onClick={() => setF({ ...f, cat: c.id })}>{c.icone} {c.nome}</button>)}
+          {CATEGORIAS.map((c) => <button key={c.id} type="button" className={f.cat === c.id ? 'on' : ''} onClick={() => setF({ ...f, cat: c.id })}>{c.nome}</button>)}
         </div>
         <div className="grid2">
           <Field label="Ícone (emoji)" text value={f.icone} onChange={(v) => setF({ ...f, icone: v })} />

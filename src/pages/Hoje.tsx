@@ -53,6 +53,11 @@ export default function Hoje() {
     antes.current = nFeitos
   }, [nFeitos, total])
 
+  // Retomada sem culpa: avisa só quando faz 3 dias ou mais sem nenhum hábito marcado.
+  const diasParado = (() => {
+    const ult = Object.entries(d.habitLog).filter(([, ids]) => ids.length > 0).map(([k]) => k).sort().pop()
+    return ult ? Math.floor((Date.now() - fromKey(ult).getTime()) / 864e5) : 0
+  })()
   const ordenados = [...pendentes, ...d.habits.filter((h) => feitos.has(h.id))]
 
   // Uma única ação principal, escolhida pelo contexto.
@@ -94,6 +99,13 @@ export default function Hoje() {
             </ul>
           </div>
 
+          {diasParado >= 3 && nFeitos === 0 && total > 0 && (
+            <div className="retomar">
+              <b>Recomeçar também é progresso.</b>
+              <p>Faz {diasParado} dias desde o último registro. Hoje, conclua apenas um hábito e a sequência volta a andar.</p>
+            </div>
+          )}
+
           <div className="sec-row">
             <b className="sec-title">Prioridades de hoje</b>
             <small className="streak"><Link to="/app/habitos" className="lnk">Gerenciar hábitos</Link></small>
@@ -110,7 +122,7 @@ export default function Hoje() {
                       {on && <Check size={11} strokeWidth={3} />}
                     </button>
                     <span className="row__txt">
-                      <b className={on ? 'done' : ''}>{h.icon} {h.title}</b>
+                      <b className={on ? 'done' : ''}><span className="emo">{h.icon}</span>{h.title}</b>
                       <small>{HABIT_AREAS.find((a) => a.id === h.area)?.label}{h.target ? ` · meta ${h.target}${h.unit ? ' ' + h.unit : ''}` : ''}{area && !on ? ' · registre em Registrar' : ''}</small>
                     </span>
                     {apagar === h.id ? (

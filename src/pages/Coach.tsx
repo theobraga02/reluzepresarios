@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CircleAlert, CircleCheck, Send, Sparkles, X } from 'lucide-react'
-import { LogoMark, ScoreRing } from '../components/ui'
+import { ScoreRing } from '../components/ui'
 import { Btn } from '../components/kit'
 import { relatorioLocal } from '../lib/coach'
 import { CATALOGO } from '../lib/conteudo'
@@ -62,7 +62,6 @@ export default function Coach() {
   return (
     <div className="scr">
       <header className="scr-head scr-head--coach">
-        <LogoMark size={18} />
         <div>
           <h2>IA Coach</h2>
           <p className="scr-sub">{dateLabelLong(new Date())}</p>

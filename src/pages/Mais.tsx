@@ -79,6 +79,21 @@ function Conta() {
   )
 }
 
+function Seguranca() {
+  const c = useCloud()
+  const [nova, setNova] = useState('')
+  const [msg, setMsg] = useState('')
+  if (!c.email) return null
+  return (
+    <div className="card list-card">
+      <b>Segurança</b>
+      <Field label="Nova senha (mín. 6)" text value={nova} onChange={setNova} />
+      <Btn kind="ghost" disabled={nova.length < 6} onClick={async () => { const ok = await novaSenha(nova); setMsg(ok ? 'Senha atualizada.' : 'Não foi possível atualizar a senha agora.'); if (ok) setNova('') }}>Alterar senha</Btn>
+      {msg && <p className="aviso" role="status">{msg}</p>}
+    </div>
+  )
+}
+
 export default function Mais() {
   const d = useData()
   const arq = useRef<HTMLInputElement>(null)
@@ -106,14 +121,18 @@ export default function Mais() {
     <div className="scr">
       <header className="scr-head"><div><h2>Mais</h2><p className="scr-sub">Atalhos, metas e dados</p></div></header>
       <div className="scr-body">
+        <h3 className="grp">Conta</h3>
         <Conta />
+        <Seguranca />
 
+        <h3 className="grp">Atalhos</h3>
         <ul className="rows">
           {ATALHOS.map(({ to, Icon, l }) => (
             <li key={to}><Link to={to} className="row"><span className="row__mark"><Icon size={12} strokeWidth={1.7} /></span><span className="row__txt"><b>{l}</b></span></Link></li>
           ))}
         </ul>
 
+        <h3 className="grp">Preferências</h3>
         <div className="card list-card">
           <b>IA (Gemini, Groq, OpenRouter)</b>
           <p className="fine">A IA recebe apenas um resumo numérico (notas por área e metas). Anotações, nomes de clientes e valores em R$ nunca são enviados. Cursos e eventos vêm de busca na web, com link verificado.</p>
@@ -138,9 +157,10 @@ export default function Mais() {
           <p className="fine">O lembrete funciona com o app aberto no navegador.</p>
         </div>
 
+        <h3 className="grp">Privacidade e dados</h3>
         <div className="card list-card">
           <b>Seus dados</b>
-          <p className="fine">Tudo fica salvo só neste aparelho. Faça backup de vez em quando.</p>
+          <p className="fine">Seus dados ficam neste aparelho e, com a conta, também na nuvem. Faça um backup de vez em quando.</p>
           <button type="button" className="act" onClick={baixar}><Download size={14} /> Exportar backup (JSON)</button>
           <button type="button" className="act" onClick={() => arq.current?.click()}><Upload size={14} /> Importar backup</button>
           <input ref={arq} type="file" accept="application/json,.json" hidden onChange={async (e) => {
@@ -167,7 +187,7 @@ export default function Mais() {
         </div>
 
         <p className="fine">
-          Empresário v2 · Versículos: Almeida Revista e Corrigida. Cursos, livros e vídeos listados são sugestões; confira preço e certificação no site de origem.
+          Empresário v2 · Bíblia: Almeida 1911 (domínio público). Cursos, livros e vídeos listados são sugestões; confira preço e certificação no site de origem.
           O app não substitui orientação financeira, jurídica ou médica.
         </p>
       </div>

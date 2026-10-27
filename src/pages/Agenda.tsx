@@ -37,7 +37,7 @@ export default function Agenda() {
       <SubHead title="Agenda" sub="Seus compromissos" />
       <div className="scr-body">
         <button type="button" className="act" onClick={() => setNovo(true)}><Plus size={14} /> Novo compromisso</button>
-        {futuros.length === 0 && <Empty>Nada agendado. Adicione compromissos e eventos de networking.</Empty>}
+        {futuros.length === 0 && <Empty>Um dia organizado começa com um compromisso claro. Adicione o primeiro.</Empty>}
         {Object.entries(grupos).map(([dia, l]) => (
           <section key={dia}>
             <b className="sec-title">{dia === hoje ? 'Hoje' : dateLabel(fromKey(dia))}</b>
