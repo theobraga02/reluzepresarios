@@ -12,11 +12,20 @@ const cache = new Map<string, string[][]>()
 export async function carregarLivro(code: string): Promise<string[][]> {
   const hit = cache.get(code)
   if (hit) return hit
-  const r = await fetch(`/biblia/${code}.json`)
-  if (!r.ok) throw new Error('falha ao carregar')
-  const j = (await r.json()) as string[][]
-  cache.set(code, j)
-  return j
+  const url = `/biblia/${code}.json`
+  // 1ª tentativa normal; se vier erro ou algo que não é JSON (cache antigo), tenta de novo direto na rede.
+  for (const modo of ['default', 'reload'] as RequestCache[]) {
+    try {
+      const r = await fetch(url, { cache: modo })
+      if (!r.ok || !(r.headers.get('content-type') || '').includes('json')) continue
+      const j = (await r.json()) as string[][]
+      if (!Array.isArray(j)) continue
+      cache.set(code, j)
+      return j
+    } catch { /* tenta a próxima */ }
+  }
+  try { await (await caches.open('emp-v3')).delete(url) } catch { /* ignora */ }
+  throw new Error('falha ao carregar')
 }
 
 export type Achado = { code: string; nome: string; cap: number; v: number; texto: string }

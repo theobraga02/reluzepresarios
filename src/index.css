@@ -763,3 +763,4 @@ a.card:hover, .rows a.row:hover { border-color: #3A3E44; }
 }
 @media (min-width: 440px) and (max-width: 1023px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
 .shell__body { height: 100%; }
+.publico { height: 100dvh; }

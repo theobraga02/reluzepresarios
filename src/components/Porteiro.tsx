@@ -75,6 +75,7 @@ function Entrada() {
         {(/confirmar o e-mail|confirmação/i.test(c.msg ?? '')) && <button type="button" className="act" disabled={!email.includes('@')} onClick={() => void reenviarConfirmacao(email)}>Reenviar e-mail de confirmação</button>}
         {c.msg && <p className="aviso" role="status">{c.msg}</p>}
       </div>
+      <Link to="/app/biblia" className="fine lnk">Ler a Bíblia sem entrar</Link>
       <Link to="/" className="fine lnk">← Voltar ao início</Link>
       {ler && <Sheet title="Termos de Uso" onClose={() => setLer(false)}><TermosTexto /></Sheet>}
     </div>
@@ -129,6 +130,8 @@ export function Porteiro() {
     if (!noInicio) nav('/app/habitos?inicio=1', { replace: true })
   }, [liberado, feito, c.phase, c.uid, nova, d.habits.length, noInicio, limpo, nav])
 
+  // A Bíblia é de leitura livre: funciona mesmo sem conta (os registros ficam só neste aparelho).
+  if (!liberado && loc.pathname.startsWith('/app/biblia')) return <div className="shell__main publico"><Outlet /></div>
   if (!c.pronto) return <Carregando texto="Abrindo…" />
   if (!c.email) return <Entrada />
   if (!c.termos) return <AceiteTermos />
