@@ -186,42 +186,60 @@ export function iniciarNuvem() {
   } else set({ pronto: true })
 }
 
-const traduz = (m: string) =>
-  /invalid login/i.test(m) ? 'E-mail ou senha incorretos.'
-  : /already registered|already been registered/i.test(m) ? 'Esse e-mail já tem conta. Use “Entrar”.'
-  : /password should be at least/i.test(m) ? 'A senha precisa ter pelo menos 6 caracteres.'
-  : /email not confirmed/i.test(m) ? 'Confirme seu e-mail pelo link que enviamos e tente de novo.'
-  : /rate limit|too many/i.test(m) ? 'Muitas tentativas. Aguarde alguns minutos.'
-  : /valid email|invalid email/i.test(m) ? 'Digite um e-mail válido.'
-  : 'Não foi possível concluir agora. Tente novamente.'
+type ErroAuth = { message: string; code?: string; status?: number }
+/** Traduz o erro do Supabase e mantém o código técnico no fim, para o diagnóstico ficar fácil. */
+const traduz = (e: ErroAuth) => {
+  const m = e.message ?? ''
+  const c = e.code ?? ''
+  const txt =
+    c === 'invalid_credentials' || /invalid login/i.test(m) ? 'E-mail ou senha incorretos. Se a conta foi criada em outro app com a mesma conta, use “Esqueci minha senha”.'
+    : c === 'user_already_exists' || /already registered|already been registered/i.test(m) ? 'Esse e-mail já tem conta. Use “Entrar” (ou “Esqueci minha senha”).'
+    : c === 'weak_password' || /password should be at least/i.test(m) ? 'A senha precisa ter pelo menos 6 caracteres.'
+    : c === 'email_not_confirmed' || /email not confirmed/i.test(m) ? 'Falta confirmar o e-mail. Abra o link que enviamos ou peça um novo abaixo.'
+    : c === 'signup_disabled' || /signups? not allowed/i.test(m) ? 'O cadastro de novas contas está desativado no Supabase (Authentication → Sign In / Providers → Allow new users to sign up).'
+    : c === 'over_email_send_rate_limit' || /rate limit|too many/i.test(m) ? 'Limite de e-mails do Supabase atingido. Aguarde cerca de 1 hora ou configure um SMTP próprio.'
+    : /error sending|sending confirmation|smtp/i.test(m) ? 'O Supabase não conseguiu enviar o e-mail de confirmação (SMTP). Veja Authentication → Emails → SMTP Settings.'
+    : /failed to fetch|network|load failed/i.test(m) ? 'Sem conexão com o servidor. Verifique a internet e tente de novo.'
+    : c === 'validation_failed' || /valid email|invalid email/i.test(m) ? 'Digite um e-mail válido.'
+    : 'Não foi possível concluir agora. Tente novamente.'
+  return c || e.status ? `${txt} (${c || e.status})` : txt
+}
 
 export async function entrar(email: string, senha: string) {
   const c = await sb()
   set({ phase: 'busy', msg: undefined })
-  const { error } = await c.auth.signInWithPassword({ email: email.trim(), password: senha })
-  if (error) { set({ phase: 'off', msg: traduz(error.message) }); return false }
-  return true
+  try {
+    const { error } = await c.auth.signInWithPassword({ email: email.trim(), password: senha })
+    if (error) { set({ phase: 'off', msg: traduz(error) }); return false }
+    return true
+  } catch (e) { set({ phase: 'off', msg: traduz(e as ErroAuth) }); return false }
 }
 
 export async function criarConta(email: string, senha: string, aceitou = false) {
   const c = await sb()
   set({ phase: 'busy', msg: undefined })
-  const { data, error } = await c.auth.signUp({ email: email.trim(), password: senha, options: { emailRedirectTo: `${location.origin}/app`, data: aceitou ? { termos_v: TERMOS_V, termos_em: new Date().toISOString() } : {} } })
-  if (error) { set({ phase: 'off', msg: traduz(error.message) }); return false }
-  if (!data.session) set({ phase: 'off', msg: 'Enviamos um link de confirmação para o seu e-mail. Abra-o e depois entre aqui.' })
-  return true
+  try {
+    const { data, error } = await c.auth.signUp({ email: email.trim(), password: senha, options: { emailRedirectTo: `${location.origin}/app`, data: aceitou ? { termos_v: TERMOS_V, termos_em: new Date().toISOString() } : {} } })
+    if (error) { set({ phase: 'off', msg: traduz(error) }); return false }
+    // O Supabase devolve um usuário "falso" sem identidades quando o e-mail já existe (para não revelar contas).
+    if (data.user && data.user.identities?.length === 0) { set({ phase: 'off', msg: 'Esse e-mail já tem conta. Use “Entrar” (ou “Esqueci minha senha”).' }); return false }
+    if (!data.session) set({ phase: 'off', msg: 'Conta criada. Enviamos um link de confirmação para o seu e-mail: abra-o e depois entre aqui.' })
+    return true
+  } catch (e) { set({ phase: 'off', msg: traduz(e as ErroAuth) }); return false }
 }
 
 export async function recuperarSenha(email: string) {
   const c = await sb()
-  const { error } = await c.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${location.origin}/app` })
-  set({ msg: error ? traduz(error.message) : 'Se esse e-mail tiver conta, enviamos um link para criar nova senha.' })
+  try {
+    const { error } = await c.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${location.origin}/app` })
+    set({ msg: error ? traduz(error) : 'Se esse e-mail tiver conta, enviamos um link para criar nova senha.' })
+  } catch (e) { set({ msg: traduz(e as ErroAuth) }) }
 }
 
 export async function novaSenha(senha: string) {
   const c = await sb()
   const { error } = await c.auth.updateUser({ password: senha })
-  set(error ? { msg: traduz(error.message) } : { recovery: false, msg: 'Senha atualizada.' })
+  set(error ? { msg: traduz(error) } : { recovery: false, msg: 'Senha atualizada.' })
   return !error
 }
 
@@ -248,4 +266,12 @@ export async function aceitarTermos() {
   try { if (userId) localStorage.setItem(termosKey(userId), TERMOS_V) } catch { /* ignora */ }
   set({ termos: true, msg: undefined })
   return true
+}
+
+export async function reenviarConfirmacao(email: string) {
+  try {
+    const c = await sb()
+    const { error } = await c.auth.resend({ type: 'signup', email: email.trim(), options: { emailRedirectTo: `${location.origin}/app` } })
+    set({ msg: error ? traduz(error) : 'Enviamos um novo link de confirmação.' })
+  } catch (e) { set({ msg: traduz(e as ErroAuth) }) }
 }

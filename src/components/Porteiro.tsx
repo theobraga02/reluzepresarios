@@ -2,15 +2,22 @@ import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Btn, Field, Sheet } from './kit'
 import { Logo } from './ui'
+import { PanelLeft } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { TermosTexto } from './TermosTexto'
-import { aceitarTermos, criarConta, entrar, novaSenha, recuperarSenha, sair, useCloud } from '../lib/cloud'
+import { aceitarTermos, criarConta, entrar, novaSenha, recuperarSenha, reenviarConfirmacao, sair, useCloud } from '../lib/cloud'
 import { HABITOS_INICIAIS } from '../lib/defaults'
 import { resetAll, update, useData } from '../lib/store'
 
 const onbKey = (uid: string) => `empresario:onb:${uid}`
 export const onboardingFeito = (uid?: string) => { try { return !!uid && localStorage.getItem(onbKey(uid)) === '1' } catch { return false } }
 export const concluirOnboarding = (uid?: string) => { try { if (uid) localStorage.setItem(onbKey(uid), '1') } catch { /* ignora */ } }
+
+const TITULOS: [string, string][] = [
+  ['/app/painel', 'Evolução'], ['/app/registrar', 'Registrar'], ['/app/habitos', 'Hábitos'], ['/app/aprender', 'Aprender'], ['/app/coach', 'Coach com IA'],
+  ['/app/biblia', 'Bíblia'], ['/app/agenda', 'Agenda'], ['/app/rede', 'Rede'], ['/app/negocio', 'Meu negócio'], ['/app/mais', 'Configurações'],
+]
+const tituloDe = (p: string) => TITULOS.find(([k]) => p.startsWith(k))?.[1] ?? 'Visão geral'
 
 function Carregando({ texto }: { texto: string }) {
   return <div className="gate"><Logo /><p className="fine" aria-busy="true">{texto}</p></div>
@@ -65,6 +72,7 @@ function Entrada() {
           ? <Btn disabled={busy || !ok} onClick={() => void entrar(email, senha)}>{busy ? 'Aguarde…' : 'Entrar'}</Btn>
           : <Btn disabled={busy || !ok || !aceito} onClick={() => void criarConta(email, senha, aceito)}>{busy ? 'Aguarde…' : 'Criar conta'}</Btn>}
         {modo === 'entrar' && <button type="button" className="act" disabled={!email.includes('@')} onClick={() => void recuperarSenha(email)}>Esqueci minha senha</button>}
+        {(/confirmar o e-mail|confirmação/i.test(c.msg ?? '')) && <button type="button" className="act" disabled={!email.includes('@')} onClick={() => void reenviarConfirmacao(email)}>Reenviar e-mail de confirmação</button>}
         {c.msg && <p className="aviso" role="status">{c.msg}</p>}
       </div>
       <Link to="/" className="fine lnk">← Voltar ao início</Link>
@@ -106,6 +114,8 @@ export function Porteiro() {
   const feito = onboardingFeito(c.uid)
   const noInicio = loc.pathname === '/app/habitos' && loc.search.includes('inicio=1')
   const [limpo, setLimpo] = useState(false)
+  const [min, setMin] = useState(() => { try { return localStorage.getItem('empresario:side') === 'min' } catch { return false } })
+  const alternarMenu = () => { setMin(!min); try { localStorage.setItem('empresario:side', min ? 'max' : 'min') } catch { /* ignora */ } }
   const padrao = new Set(HABITOS_INICIAIS.map((h) => h.id))
   const nova = d.exemplo || (d.habits.length > 0 && d.habits.every((h) => padrao.has(h.id)) && Object.keys(d.habitLog).length === 0)
   const [, bump] = useState(0)
@@ -126,8 +136,16 @@ export function Porteiro() {
   if (!feito && !noInicio) return <Carregando texto="Preparando seu app…" />
   return (
     <div className="shell">
-      <Sidebar />
-      <div className="shell__main"><Outlet /></div>
+      <Sidebar min={min} onToggle={alternarMenu} />
+      <div className="shell__main">
+        <header className="topbar">
+          <button type="button" className="icon-btn" aria-label={min ? 'Expandir menu' : 'Recolher menu'} onClick={alternarMenu}><PanelLeft size={16} strokeWidth={1.6} /></button>
+          <i aria-hidden />
+          <b>{tituloDe(loc.pathname)}</b>
+          <span>{c.email}</span>
+        </header>
+        <div className="shell__body"><Outlet /></div>
+      </div>
     </div>
   )
 }
