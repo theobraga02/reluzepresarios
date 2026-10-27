@@ -18,9 +18,9 @@ export function LogoMark({ size = 28 }: { size?: number }) {
 
 export function Logo({ size = 28 }: { size?: number }) {
   return (
-    <span className="logo">
-      <LogoMark size={size} />
-      <span className="logo__txt">EMPRESÁRIO</span>
+    <span className="brand" style={{ fontSize: size * 0.9 }}>
+      <b>RELUZ</b>
+      <small>EMPRESÁRIOS</small>
     </span>
   )
 }
@@ -45,9 +45,9 @@ export function ScoreRing({
   return (
     <div className="sring" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#2c2c2f" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#2A2D32" strokeWidth={stroke} />
         <circle
-          cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#f4f4f5" strokeWidth={stroke}
+          cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#D1AD68" strokeWidth={stroke}
           strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />

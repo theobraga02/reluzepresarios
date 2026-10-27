@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Btn, Field, Sheet } from './kit'
 import { Logo } from './ui'
+import { Sidebar } from './Sidebar'
 import { TermosTexto } from './TermosTexto'
 import { aceitarTermos, criarConta, entrar, novaSenha, recuperarSenha, sair, useCloud } from '../lib/cloud'
 import { HABITOS_INICIAIS } from '../lib/defaults'
@@ -123,5 +124,10 @@ export function Porteiro() {
   if (!c.termos) return <AceiteTermos />
   if (c.phase === 'busy') return <Carregando texto="Sincronizando seus dados…" />
   if (!feito && !noInicio) return <Carregando texto="Preparando seu app…" />
-  return <Outlet />
+  return (
+    <div className="shell">
+      <Sidebar />
+      <div className="shell__main"><Outlet /></div>
+    </div>
+  )
 }

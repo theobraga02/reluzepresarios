@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo } from 'react'
+import { BookOpen, Crown, Dumbbell, Flame, Handshake, ListChecks, Zap } from 'lucide-react'
 import { addDays, keyOf } from '../lib/date'
 import { AREAS, AREA_NOME, scoreDia, sequencia } from '../lib/score'
 import { useData } from '../lib/store'
@@ -13,9 +14,9 @@ export function Conquistas() {
     const dados = AREAS.map((a) => ({ area: AREA_NOME[a], v: Math.round((sc.reduce((s, x) => s + x[a], 0) / 7) * 10) / 10 }))
     const seq = sequencia(d)
     const med = [
-      { ic: '🔥', t: '3 dias seguidos', ok: seq >= 3 }, { ic: '⚡', t: '7 dias seguidos', ok: seq >= 7 }, { ic: '👑', t: '30 dias seguidos', ok: seq >= 30 },
-      { ic: '💪', t: '10 treinos', ok: d.workoutRecords.length >= 10 }, { ic: '📖', t: '10 capítulos', ok: d.bibleRecords.length >= 10 },
-      { ic: '💰', t: '10 vendas', ok: d.saleRecords.length >= 10 }, { ic: '🎯', t: '5 hábitos', ok: d.habits.length >= 5 },
+      { Ic: Flame, t: '3 dias seguidos', ok: seq >= 3 }, { Ic: Zap, t: '7 dias seguidos', ok: seq >= 7 }, { Ic: Crown, t: '30 dias seguidos', ok: seq >= 30 },
+      { Ic: Dumbbell, t: '10 treinos', ok: d.workoutRecords.length >= 10 }, { Ic: BookOpen, t: '10 capítulos', ok: d.bibleRecords.length >= 10 },
+      { Ic: Handshake, t: '10 vendas', ok: d.saleRecords.length >= 10 }, { Ic: ListChecks, t: '5 hábitos', ok: d.habits.length >= 5 },
     ]
     return { dados, medalhas: med }
   }, [d])
@@ -28,7 +29,7 @@ export function Conquistas() {
       <div className="card">
         <b className="sec-title">Conquistas · {medalhas.filter((m) => m.ok).length}/{medalhas.length}</b>
         <ul className="medalhas">
-          {medalhas.map((m) => <li key={m.t} className={m.ok ? 'on' : ''}><span>{m.ic}</span><small>{m.t}</small></li>)}
+          {medalhas.map((m) => <li key={m.t} className={m.ok ? 'on' : ''}><span><m.Ic size={20} strokeWidth={1.5} /></span><small>{m.t}</small></li>)}
         </ul>
       </div>
     </>

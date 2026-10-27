@@ -11,7 +11,7 @@ export async function confete(forte = false) {
   vibrar(forte ? [20, 40, 20] : 12)
   if (reduz()) return
   const { default: c } = await import('canvas-confetti')
-  const cores = ['#f4f4f5', '#d4d4d8', '#a1a1aa', '#f3a24b']
+  const cores = ['#D1AD68', '#E4C98F', '#947444', '#F2F0EA']
   c({ particleCount: forte ? 140 : 60, spread: forte ? 90 : 60, startVelocity: 38, origin: { y: 0.7 }, colors: cores, disableForReducedMotion: true })
 }
 
