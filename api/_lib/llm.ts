@@ -17,9 +17,9 @@ const env = (k: string) => {
   return ''
 }
 
-const GEMINI_MODEL = () => env('GEMINI_MODEL') || 'gemini-2.5-flash'
-const GROQ_MODEL = () => env('GROQ_MODEL') || 'llama-3.3-70b-versatile'
-const OPENROUTER_MODEL = () => env('OPENROUTER_MODEL') || 'meta-llama/llama-3.3-70b-instruct:free'
+const GEMINI_MODEL = () => env('GEMINI_MODEL') || 'gemini-3.8-flash'
+const GROQ_MODEL = () => env('GROQ_MODEL') || 'openai/gpt-oss-120b'
+const OPENROUTER_MODEL = () => env('OPENROUTER_MODEL') || 'openrouter/free'
 
 export const temAlgumaIA = () => Boolean(env('GEMINI_API_KEY') || env('GROQ_API_KEY') || env('OPENROUTER_API_KEY'))
 
@@ -75,18 +75,51 @@ async function compat(url: string, key: string, model: string, msgs: Mensagem[],
 
 const unico = (l: string[]) => [...new Set(l.filter(Boolean))]
 
+/* Modelos mudam e são aposentados: descobre os disponíveis na própria conta (cache por instância). */
+let cacheModelos: { t: number; gemini: string[]; groq: string[] } | null = null
+async function modelos() {
+  if (cacheModelos && Date.now() - cacheModelos.t < 3_600_000) return cacheModelos
+  const out = { t: Date.now(), gemini: [] as string[], groq: [] as string[] }
+  if (env('GEMINI_API_KEY')) {
+    try {
+      const r = await comTimeout('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers: { 'x-goog-api-key': env('GEMINI_API_KEY') } }, 10000)
+      const j: any = await r.json()
+      const nomes: string[] = (j?.models ?? [])
+        .filter((m: any) => (m.supportedGenerationMethods ?? []).includes('generateContent'))
+        .map((m: any) => String(m.name).replace('models/', ''))
+        .filter((n: string) => /flash/.test(n) && !/(image|tts|live|audio|thinking|preview-|exp|embedding|robotics|computer|vision)/.test(n))
+      const versao = (n: string) => Number((n.match(/gemini-(\d+(?:\.\d+)?)/) ?? [])[1] ?? 0)
+      const lite = (n: string) => (/lite/.test(n) ? 1 : 0)
+      out.gemini = nomes.sort((x, y) => lite(x) - lite(y) || versao(y) - versao(x) || x.length - y.length).slice(0, 4)
+    } catch { /* usa os padrões */ }
+  }
+  if (env('GROQ_API_KEY')) {
+    try {
+      const r = await comTimeout('https://api.groq.com/openai/v1/models', { headers: { authorization: `Bearer ${env('GROQ_API_KEY')}` } }, 10000)
+      const j: any = await r.json()
+      const ids: string[] = (j?.data ?? []).filter((m: any) => m.active !== false).map((m: any) => String(m.id))
+        .filter((i: string) => !/(whisper|guard|tts|orpheus|playai|embed|distil)/.test(i))
+      const nota = (i: string) => (/gpt-oss-120b/.test(i) ? 0 : /llama.*(70b|versatile|maverick|scout)/.test(i) ? 1 : /qwen|kimi/.test(i) ? 2 : /gpt-oss/.test(i) ? 3 : /llama/.test(i) ? 4 : 9)
+      out.groq = ids.sort((x, y) => nota(x) - nota(y)).slice(0, 4)
+    } catch { /* usa os padrões */ }
+  }
+  cacheModelos = out
+  return out
+}
+
 type Passo = { nome: string; run: () => Promise<string> }
-function passos(msgs: Mensagem[], json: boolean): Passo[] {
+async function passos(msgs: Mensagem[], json: boolean): Promise<Passo[]> {
   const l: Passo[] = []
+  const d = await modelos()
   if (env('GEMINI_API_KEY'))
-    for (const m of unico([GEMINI_MODEL(), 'gemini-2.5-flash-lite', 'gemini-2.0-flash']))
+    for (const m of unico([...d.gemini, GEMINI_MODEL()]).slice(0, 4))
       l.push({ nome: `Gemini ${m}`, run: () => gemini(msgs, json, m) })
   if (env('GROQ_API_KEY'))
-    for (const m of unico([GROQ_MODEL(), 'llama-3.1-8b-instant']))
+    for (const m of unico([...d.groq, GROQ_MODEL()]).slice(0, 4))
       l.push({ nome: `Groq ${m}`, run: () => compat('https://api.groq.com/openai/v1/chat/completions', env('GROQ_API_KEY'), m, msgs, json) })
   if (env('OPENROUTER_API_KEY'))
-    for (const m of unico([OPENROUTER_MODEL(), 'google/gemma-3-27b-it:free', 'openrouter/free']))
-      l.push({ nome: `OpenRouter ${m}`, run: () => compat('https://openrouter.ai/api/v1/chat/completions', env('OPENROUTER_API_KEY'), m, msgs, json && !m.includes('gemma'), { 'x-title': 'Empresario' }) })
+    for (const m of unico(['openrouter/free', OPENROUTER_MODEL()]))
+      l.push({ nome: `OpenRouter ${m}`, run: () => compat('https://openrouter.ai/api/v1/chat/completions', env('OPENROUTER_API_KEY'), m, msgs, false, { 'x-title': 'Empresario' }) })
   return l
 }
 
@@ -100,7 +133,7 @@ export class FalhaIA extends Error {
 
 export async function perguntar(msgs: Mensagem[], json = false): Promise<Resposta> {
   const falhas: string[] = []
-  for (const p of passos(msgs, json)) {
+  for (const p of await passos(msgs, json)) {
     try {
       return { texto: await p.run(), provider: p.nome.split(' ')[0] }
     } catch (e) {
@@ -113,7 +146,7 @@ export async function perguntar(msgs: Mensagem[], json = false): Promise<Respost
 /** Diagnóstico: testa cada provedor com uma pergunta mínima (sem expor chaves). */
 export async function diagnostico() {
   const out: Record<string, string> = {}
-  for (const p of passos([{ role: 'user', content: 'Responda apenas: ok' }], false)) {
+  for (const p of await passos([{ role: 'user', content: 'Responda apenas: ok' }], false)) {
     try {
       await p.run()
       out[p.nome] = 'ok'
