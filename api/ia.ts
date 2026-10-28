@@ -1,4 +1,4 @@
-import { extrairJSON, perguntar, temAlgumaIA, type Mensagem } from './_lib/llm.js'
+import { configurados, diagnostico, extrairJSON, FalhaIA, perguntar, temAlgumaIA, type Mensagem } from './_lib/llm.js'
 import { buscar, linkAbre, temBusca, type Achado } from './_lib/web.js'
 
 type Req = { method?: string; body?: any; headers: Record<string, string | string[] | undefined>; socket?: { remoteAddress?: string } }
@@ -165,6 +165,17 @@ const TAREFAS: Record<string, (b: any) => Promise<unknown>> = { coach, chat, cur
 
 export default async function handler(req: Req, res: Res) {
   res.setHeader('cache-control', 'no-store')
+  if (req.method === 'GET') {
+    // Estado do servidor (sem segredos). ?teste=1 faz uma chamada mínima a cada provedor.
+    const q = String((req as any).url ?? '')
+    const base: Record<string, unknown> = { ok: true, configurados: configurados() }
+    if (q.includes('teste=1')) {
+      const ipg = String((req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0] ?? 'x').trim()
+      if (limitado(ipg)) return res.status(429).json({ erro: 'Aguarde um minuto.' })
+      base.teste = await diagnostico()
+    }
+    return res.status(200).json(base)
+  }
   if (req.method !== 'POST') return res.status(405).json({ erro: 'Use POST.' })
   const ip = String((req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0] ?? req.socket?.remoteAddress ?? 'x').trim()
   if (limitado(ip)) return res.status(429).json({ erro: 'Muitas solicitações. Aguarde um minuto.' })
@@ -178,8 +189,10 @@ export default async function handler(req: Req, res: Res) {
     if (out?.erro) return res.status(out.codigo === 'config' ? 503 : 500).json(out)
     return res.status(200).json(out)
   } catch (e) {
-    console.error('ia:', (e as Error).message)
-    return res.status(502).json({ erro: 'As IAs não responderam agora. Tente de novo em instantes.' })
+    const msg = (e as Error).message
+    console.error('ia:', msg)
+    const detalhe = e instanceof FalhaIA ? e.detalhes.map((x) => x.slice(0, 200)) : [msg.slice(0, 200)]
+    return res.status(502).json({ erro: 'As IAs não responderam agora. Tente de novo em instantes.', detalhe })
   }
 }
 

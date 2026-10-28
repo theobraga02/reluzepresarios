@@ -1,14 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CircleAlert, CircleCheck, Send, Sparkles, X } from 'lucide-react'
-import { ScoreRing } from '../components/ui'
+import { BottomNav, ScoreRing } from '../components/ui'
 import { Btn } from '../components/kit'
 import { relatorioLocal } from '../lib/coach'
 import { CATALOGO } from '../lib/conteudo'
 import { dateLabelLong, todayKey } from '../lib/date'
 import { avaliarComIA, conversarComCoach, IAError, type Msg } from '../lib/ia'
-import { useData } from '../lib/store'
+import { setConsent, useData } from '../lib/store'
 import type { CoachReport } from '../lib/types'
+
+function msgErro(e: unknown, padrao: string) {
+  if (!(e instanceof IAError)) return padrao
+  const det = e.detalhe.length ? ` (${e.detalhe[0].slice(0, 140)})` : ''
+  return e.message + det
+}
 
 export default function Coach() {
   const d = useData()
@@ -35,7 +41,7 @@ export default function Coach() {
     try {
       setRel(await avaliarComIA(d))
     } catch (e) {
-      setErro(e instanceof IAError ? e.message : 'Não foi possível avaliar agora.')
+      setErro(msgErro(e, 'Não foi possível avaliar agora.'))
     } finally {
       setCarregando(false)
     }
@@ -53,7 +59,7 @@ export default function Coach() {
       const j = await conversarComCoach(novo, d)
       setChat([...novo, { role: 'assistant', content: j.resposta }])
     } catch (e) {
-      setErro(e instanceof IAError ? e.message : 'Não foi possível responder agora.')
+      setErro(msgErro(e, 'Não foi possível responder agora.'))
     } finally {
       setEnviando(false)
     }
@@ -108,14 +114,14 @@ export default function Coach() {
         </p>
 
         {consent ? (
-          <Btn onClick={avaliar} disabled={carregando || !local.temDados}>
+          <Btn onClick={avaliar} disabled={carregando}>
             <Sparkles size={14} /> {carregando ? 'Avaliando…' : rel ? 'Avaliar de novo com IA' : 'Avaliar com IA'}
           </Btn>
         ) : (
-          <Link to="/app/mais" className="card ia-box">
+          <button type="button" className="card ia-box" onClick={() => setConsent(true)}>
             <span className="chip-ic"><Sparkles size={13} strokeWidth={1.7} /></span>
-            <div><b>Ativar o Coach com IA</b><p>Gemini, Groq ou OpenRouter analisam seu resumo numérico. Você controla em “Mais”.</p></div>
-          </Link>
+            <div><b>Ativar o Coach com IA</b><p>Toque aqui para liberar. A IA recebe só um resumo numérico dos seus últimos 7 dias.</p></div>
+          </button>
         )}
         {erro && <p className="aviso" role="alert">{erro}</p>}
 
@@ -134,6 +140,7 @@ export default function Coach() {
           <button type="submit" className="icon-btn" aria-label="Enviar" disabled={!texto.trim() || enviando}><Send size={15} /></button>
         </form>
       )}
+      <BottomNav active="coach" />
     </div>
   )
 }

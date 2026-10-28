@@ -33,13 +33,13 @@ async function comTimeout(url: string, init: RequestInit, ms = 25000) {
   }
 }
 
-async function gemini(msgs: Mensagem[], json: boolean): Promise<string> {
+async function gemini(msgs: Mensagem[], json: boolean, model = GEMINI_MODEL()): Promise<string> {
   const system = msgs.filter((m) => m.role === 'system').map((m) => m.content).join('\n\n')
   const contents = msgs
     .filter((m) => m.role !== 'system')
     .map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }))
   const r = await comTimeout(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL()}:generateContent`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
     {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-goog-api-key': env('GEMINI_API_KEY') },
@@ -50,7 +50,7 @@ async function gemini(msgs: Mensagem[], json: boolean): Promise<string> {
       }),
     },
   )
-  if (!r.ok) throw new Error(`gemini ${r.status}`)
+  if (!r.ok) throw new Error(`${model} HTTP ${r.status} ${(await r.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 160)}`)
   const j: any = await r.json()
   const t = j?.candidates?.[0]?.content?.parts?.map((p: any) => p.text ?? '').join('') ?? ''
   if (!t) throw new Error('gemini vazio')
@@ -66,36 +66,65 @@ async function compat(url: string, key: string, model: string, msgs: Mensagem[],
       ...(json ? { response_format: { type: 'json_object' } } : {}),
     }),
   })
-  if (!r.ok) throw new Error(`${model} ${r.status}`)
+  if (!r.ok) throw new Error(`${model} HTTP ${r.status} ${(await r.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 160)}`)
   const j: any = await r.json()
   const t = j?.choices?.[0]?.message?.content ?? ''
   if (!t) throw new Error('vazio')
   return t as string
 }
 
+const unico = (l: string[]) => [...new Set(l.filter(Boolean))]
+
+type Passo = { nome: string; run: () => Promise<string> }
+function passos(msgs: Mensagem[], json: boolean): Passo[] {
+  const l: Passo[] = []
+  if (env('GEMINI_API_KEY'))
+    for (const m of unico([GEMINI_MODEL(), 'gemini-2.5-flash-lite', 'gemini-2.0-flash']))
+      l.push({ nome: `Gemini ${m}`, run: () => gemini(msgs, json, m) })
+  if (env('GROQ_API_KEY'))
+    for (const m of unico([GROQ_MODEL(), 'llama-3.1-8b-instant']))
+      l.push({ nome: `Groq ${m}`, run: () => compat('https://api.groq.com/openai/v1/chat/completions', env('GROQ_API_KEY'), m, msgs, json) })
+  if (env('OPENROUTER_API_KEY'))
+    for (const m of unico([OPENROUTER_MODEL(), 'google/gemma-3-27b-it:free', 'openrouter/free']))
+      l.push({ nome: `OpenRouter ${m}`, run: () => compat('https://openrouter.ai/api/v1/chat/completions', env('OPENROUTER_API_KEY'), m, msgs, json && !m.includes('gemma'), { 'x-title': 'Empresario' }) })
+  return l
+}
+
+export class FalhaIA extends Error {
+  detalhes: string[]
+  constructor(d: string[]) {
+    super(d.join(' | ') || 'nenhuma IA configurada')
+    this.detalhes = d
+  }
+}
+
 export async function perguntar(msgs: Mensagem[], json = false): Promise<Resposta> {
-  const cadeia: { nome: string; ok: boolean; run: () => Promise<string> }[] = [
-    { nome: 'Gemini', ok: !!env('GEMINI_API_KEY'), run: () => gemini(msgs, json) },
-    {
-      nome: 'Groq', ok: !!env('GROQ_API_KEY'),
-      run: () => compat('https://api.groq.com/openai/v1/chat/completions', env('GROQ_API_KEY'), GROQ_MODEL(), msgs, json),
-    },
-    {
-      nome: 'OpenRouter', ok: !!env('OPENROUTER_API_KEY'),
-      run: () => compat('https://openrouter.ai/api/v1/chat/completions', env('OPENROUTER_API_KEY'), OPENROUTER_MODEL(), msgs, json, { 'x-title': 'Empresario' }),
-    },
-  ]
-  let ultimo = 'nenhuma IA configurada'
-  for (const p of cadeia) {
-    if (!p.ok) continue
+  const falhas: string[] = []
+  for (const p of passos(msgs, json)) {
     try {
-      return { texto: await p.run(), provider: p.nome }
+      return { texto: await p.run(), provider: p.nome.split(' ')[0] }
     } catch (e) {
-      ultimo = `${p.nome}: ${(e as Error).message}`
+      falhas.push(`${p.nome}: ${(e as Error).message}`)
     }
   }
-  throw new Error(ultimo)
+  throw new FalhaIA(falhas)
 }
+
+/** Diagnóstico: testa cada provedor com uma pergunta mínima (sem expor chaves). */
+export async function diagnostico() {
+  const out: Record<string, string> = {}
+  for (const p of passos([{ role: 'user', content: 'Responda apenas: ok' }], false)) {
+    try {
+      await p.run()
+      out[p.nome] = 'ok'
+    } catch (e) {
+      out[p.nome] = (e as Error).message.slice(0, 200)
+    }
+  }
+  return out
+}
+
+export const configurados = () => ({ gemini: !!env('GEMINI_API_KEY'), groq: !!env('GROQ_API_KEY'), openrouter: !!env('OPENROUTER_API_KEY'), busca: !!env('TAVILY_API_KEY') })
 
 /** Extrai o primeiro objeto JSON de um texto (modelos às vezes cercam com ```). */
 export function extrairJSON<T = any>(txt: string): T | null {

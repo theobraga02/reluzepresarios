@@ -22,9 +22,11 @@ export function resumoParaIA(d: AppData, ref = new Date()) {
 
 export class IAError extends Error {
   code: 'consent' | 'config' | 'limit' | 'net' | 'server'
-  constructor(msg: string, code: 'consent' | 'config' | 'limit' | 'net' | 'server' = 'server') {
+  detalhe: string[]
+  constructor(msg: string, code: 'consent' | 'config' | 'limit' | 'net' | 'server' = 'server', detalhe: string[] = []) {
     super(msg)
     this.code = code
+    this.detalhe = detalhe
   }
 }
 
@@ -50,7 +52,7 @@ async function chamar<T>(corpo: Record<string, unknown>): Promise<T> {
     const code = r.status === 429 ? 'limit' : j?.codigo === 'config' ? 'config' : r.status === 404 ? 'config' : 'server'
     const msg =
       r.status === 404 ? 'A IA só funciona no site publicado (ou com “vercel dev”).' : j?.erro || 'A IA não respondeu agora. Tente novamente.'
-    throw new IAError(msg, code)
+    throw new IAError(msg, code, Array.isArray(j?.detalhe) ? j.detalhe : [])
   }
   return j as T
 }
@@ -109,4 +111,10 @@ export async function atualizarCursosSeNecessario(fracas: Area[]) {
   } catch {
     /* silencioso: o catálogo local continua valendo */
   }
+}
+
+/** Mensagem amigável + motivo técnico curto (ajuda a diagnosticar chave/modelo). */
+export function textoErro(e: unknown, padrao: string) {
+  if (!(e instanceof IAError)) return padrao
+  return e.detalhe.length ? `${e.message} (${e.detalhe[0].slice(0, 140)})` : e.message
 }

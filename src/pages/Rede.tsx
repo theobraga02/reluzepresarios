@@ -4,8 +4,8 @@ import { BottomNav } from '../components/ui'
 import { Btn, Empty, Field, Sheet, SubHead } from '../components/kit'
 import { DICAS_NETWORKING, eventosExemplo, roteiroLocal } from '../lib/conteudo'
 import { dateLabel, dayOfYear, fromKey, todayKey } from '../lib/date'
-import { buscarEventosIA, IAError, roteiroIA } from '../lib/ia'
-import { uid, update, useData } from '../lib/store'
+import { buscarEventosIA, IAError, textoErro, roteiroIA } from '../lib/ia'
+import { setConsent, uid, update, useData } from '../lib/store'
 import type { ApproachScript, NetworkingEvent } from '../lib/types'
 
 function Evento({ ev }: { ev: NetworkingEvent }) {
@@ -22,7 +22,7 @@ function Evento({ ev }: { ev: NetworkingEvent }) {
     try {
       setRot(await roteiroIA(ev, d.businessProfile))
     } catch (e) {
-      setMsg(e instanceof IAError ? e.message : 'Não foi possível gerar agora.')
+      setMsg(textoErro(e, 'Não foi possível gerar agora.'))
     } finally {
       setCarregando(false)
     }
@@ -84,7 +84,7 @@ export default function Rede() {
       const l = await buscarEventosIA(d)
       setAviso(l.length ? `${l.length} eventos encontrados, com link verificado.` : 'Nenhum evento confiável encontrado agora.')
     } catch (e) {
-      setAviso(e instanceof IAError ? e.message : 'Não foi possível buscar agora.')
+      setAviso(textoErro(e, 'Não foi possível buscar agora.'))
     } finally {
       setBuscando(false)
     }
@@ -105,7 +105,7 @@ export default function Rede() {
             {d.settings.aiConsent ? (
               <Btn kind="ghost" onClick={buscar} disabled={buscando}><Sparkles size={13} /> {buscando ? 'Buscando…' : 'Buscar eventos reais com IA'}</Btn>
             ) : (
-              <p className="fine">Ative a IA em “Mais” para buscar eventos reais perto de você. Abaixo, exemplos ilustrativos.</p>
+              <Btn kind="ghost" onClick={() => setConsent(true)}><Sparkles size={13} /> Ativar IA para buscar eventos reais</Btn>
             )}
             {aviso && <p className="aviso" role="status">{aviso}</p>}
             {!d.businessProfile.city && <p className="fine">Dica: informe sua cidade em “Meu negócio” para a busca ficar local.</p>}

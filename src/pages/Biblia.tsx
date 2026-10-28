@@ -47,9 +47,11 @@ function Leitor({ code, cap }: { code: string; cap: number }) {
       <SubHead title={`${livro.nome} ${cap}`} sub="Almeida 1911" back="/app/biblia" />
       <div className="scr-body leitor">
         <div className="leitor__tools">
+          <button type="button" className="icon-btn" aria-label="Capítulo anterior" disabled={!ant} onClick={() => ir(ant)}><ChevronLeft size={15} /></button>
           <button type="button" className="icon-btn" aria-label="Diminuir letra" onClick={() => mudaTam(tam - 1)}><Minus size={14} /></button>
           <span>Aa</span>
           <button type="button" className="icon-btn" aria-label="Aumentar letra" onClick={() => mudaTam(tam + 1)}><Plus size={14} /></button>
+          <button type="button" className="icon-btn" aria-label="Próximo capítulo" disabled={!prox} onClick={() => ir(prox)}><ChevronRight size={15} /></button>
         </div>
         {!caps && !erro && <p className="empty">Carregando…</p>}
         {erro && <p className="aviso" role="alert">Não consegui carregar este livro. Verifique a internet e tente de novo.</p>}
@@ -83,7 +85,7 @@ function Leitor({ code, cap }: { code: string; cap: number }) {
         </div>
         <p className="fine">Toque num versículo para marcar. Texto em domínio público.</p>
       </div>
-      <BottomNav />
+      <BottomNav active="biblia" />
     </div>
   )
 }
@@ -173,7 +175,7 @@ function Indice() {
         )}
         {res && res.length === 0 && !buscando && <Empty>Tente outra palavra (a ortografia é a de 1911, ex.: “Deus”, “amor”, “fé”).</Empty>}
       </div>
-      <BottomNav />
+      <BottomNav active="biblia" />
     </div>
   )
 }

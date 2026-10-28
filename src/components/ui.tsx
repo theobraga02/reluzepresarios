@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import {
   BookOpen, ChartNoAxesCombined, Crosshair, Dumbbell, GraduationCap, Handshake, House,
-  Library, Moon, RefreshCw, SquarePen, Wallet,
+  Library, Moon, RefreshCw, Sparkles, SquarePen, Wallet,
 } from 'lucide-react'
 import type { Area } from '../lib/types'
 
@@ -60,13 +60,15 @@ export function ScoreRing({
   )
 }
 
-export type NavKey = 'hoje' | 'painel' | 'registrar' | 'aprender'
+export type NavKey = 'hoje' | 'painel' | 'registrar' | 'aprender' | 'biblia' | 'coach' | 'biblia' | 'coach'
 
 const NAV: { key: NavKey; to: string; label: string; Icon: typeof House }[] = [
   { key: 'hoje', to: '/app', label: 'Hoje', Icon: House },
   { key: 'painel', to: '/app/painel', label: 'Painel', Icon: ChartNoAxesCombined },
   { key: 'registrar', to: '/app/registrar', label: 'Registrar', Icon: SquarePen },
   { key: 'aprender', to: '/app/aprender', label: 'Aprender', Icon: GraduationCap },
+  { key: 'biblia', to: '/app/biblia', label: 'Bíblia', Icon: BookOpen },
+  { key: 'coach', to: '/app/coach', label: 'Coach', Icon: Sparkles },
 ]
 
 export function BottomNav({ active }: { active?: NavKey }) {

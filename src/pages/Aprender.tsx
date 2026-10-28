@@ -5,8 +5,8 @@ import { BottomNav } from '../components/ui'
 import { Btn } from '../components/kit'
 import { CATALOGO, TIPO_NOME, TRILHAS } from '../lib/conteudo'
 import { relatorioLocal } from '../lib/coach'
-import { atualizarCursosSeNecessario, buscarCursosIA, IAError } from '../lib/ia'
-import { update, useData } from '../lib/store'
+import { atualizarCursosSeNecessario, buscarCursosIA, IAError, textoErro } from '../lib/ia'
+import { setConsent, update, useData } from '../lib/store'
 import type { Area, Item, Tipo } from '../lib/types'
 
 type Aba = 'curso' | 'livro' | 'video' | 'trilha'
@@ -97,7 +97,7 @@ export default function Aprender({ preview = false }: { preview?: boolean }) {
       const itens = await buscarCursosIA(d, fracas)
       setAviso(itens.length ? `${itens.length} cursos novos, com link verificado.` : 'Nenhum curso confiável encontrado agora. Tente mais tarde.')
     } catch (e) {
-      setAviso(e instanceof IAError ? e.message : 'Não foi possível buscar agora.')
+      setAviso(textoErro(e, 'Não foi possível buscar agora.'))
     } finally {
       setBuscando(false)
     }
@@ -149,7 +149,7 @@ export default function Aprender({ preview = false }: { preview?: boolean }) {
                   {d.settings.aiConsent ? (
                     <Btn kind="ghost" onClick={buscar} disabled={buscando}>{buscando ? 'Buscando…' : 'Buscar agora'}</Btn>
                   ) : (
-                    <Link to="/app/mais" className="kbtn kbtn--ghost">Ativar IA em “Mais”</Link>
+                    <Btn kind="ghost" onClick={() => setConsent(true)}>Ativar IA</Btn>
                   )}
                   {aviso && <small className="aviso" role="status">{aviso}</small>}
                 </div>
